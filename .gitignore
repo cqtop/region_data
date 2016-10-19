@@ -1,0 +1,24 @@
+# Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+#svngit:
+.svn
+.git
+
+
+#ide:
+.idea
+
+
+#log:
+*.log
+
+#nodejs:
+node_modules
+
+
+#config rename *.default.php
+application/config/database.php
+application/config/rest_api.php

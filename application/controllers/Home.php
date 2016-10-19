@@ -1,0 +1,110 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Home extends CI_Controller {
+	var $subdb = null;
+	var $museum = null;
+	public function __construct(){
+		parent::__construct();
+	}
+
+	/**
+	* @param $no 序号（第几个博物馆）
+	*/
+	public function index($no=0){
+		$this->museum = $this->db->limit(1, $no)->get("museum")->row_array();
+		if(empty($this->museum)){
+			lineMsg('未查询到博物馆！', true);
+		}
+		// 初始化数据库
+		$this->initdb();
+		lineMsg('开始统计:'.$this->museum['name']);
+		// 事务
+		$this->db->trans_begin();
+		try{
+
+			$this->count_museum();
+			lineMsg('博物馆基础数据统计完成');
+
+			$this->db->trans_commit();
+		}catch(Exception $e){
+			$this->db->trans_rollback();
+			lineMsg($e->getMessage());
+		}
+		lineMsg('统计结束');
+	}
+
+	// 博物馆基础数据统计
+	function count_museum(){
+		try{
+			$data_museum = array();
+			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb));
+			
+			$data_museum['count_relic'] = $this->api->count_relic();
+
+			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_museum')){
+				$this->db->where('mid', $this->museum['id'])->update('data_museum', $data_museum);
+			}else{
+				$data_museum['mid'] = $this->museum['id'];
+				$this->db->insert('data_museum', $data_museum);
+			}
+		}catch(Exception $e){
+			throw new Exception("统计博物馆失败！");
+		}
+	}
+
+
+	// 初始化数据库
+	private function initdb(){
+		$museum = $this->museum;
+		try{
+			switch ($museum['db_type']) {
+				case 'mysql':
+					$this->subdb = array();
+					$config = array();
+					// mysql要求各子库ip、用户名、密码必须相同。
+					$config['hostname'] = $museum['db_host'];
+					$config['username'] = $museum['db_user'];
+					$config['password'] = $museum['db_pass'];
+					$config['dbdriver'] = 'mysqli';
+					// 分子系统连接数据库
+					foreach (array('base', 'relic', 'env') as $sub) {
+						$config['database'] = $museum['db_name'].'_'.$sub;
+						$this->subdb[$sub] = $this->load->database($config, TRUE);
+					}
+					break;
+				case 'mongo':
+					$server = 'mongodb://'.$museum['db_host'];
+					$options = array();
+					if($museum['db_user'] && $museum['db_pass']){
+						$options['username'] = $museum['db_user'];
+						$options['password'] = $museum['db_pass'];
+					}
+					$mongo = new MongoClient($server, $options);
+					if($mongo){
+						$this->subdb = $mongo->$museum['db_name'];
+					}
+					break;
+				default:
+					break;
+			}
+		}catch(Exception $e){
+			lineMsg("数据库初始化失败：".$e->getMessage(), true);
+		}
+
+	}
+
+
+
+
+	// 测试
+	public function test(){
+		$server = 'mongodb://192.168.8.11:27017';
+		$options = array();
+		// $options['username'] = '';
+		// $options['password'] = '';
+		$mongo = new MongoClient($server, $options);
+		$data = $mongo->museum_ya->relic->base->find();
+		debug(iterator_to_array($data));
+	}
+}
