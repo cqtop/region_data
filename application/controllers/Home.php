@@ -23,7 +23,7 @@ class Home extends CI_Controller {
 		$this->db->trans_begin();
 		try{
 
-			$this->count_museum();
+			$this->count_base();
 			lineMsg('博物馆基础数据统计完成');
 
 			$this->db->trans_commit();
@@ -35,18 +35,18 @@ class Home extends CI_Controller {
 	}
 
 	// 博物馆基础数据统计
-	function count_museum(){
+	function count_base(){
 		try{
-			$data_museum = array();
+			$data_base = array();
 			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb));
-			
-			$data_museum['count_relic'] = $this->api->count_relic();
 
-			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_museum')){
-				$this->db->where('mid', $this->museum['id'])->update('data_museum', $data_museum);
+			$data_base['count_relic'] = $this->api->count_relic();
+
+			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_base')){
+				$this->db->where('mid', $this->museum['id'])->update('data_base', $data_base);
 			}else{
-				$data_museum['mid'] = $this->museum['id'];
-				$this->db->insert('data_museum', $data_museum);
+				$data_base['mid'] = $this->museum['id'];
+				$this->db->insert('data_base', $data_base);
 			}
 		}catch(Exception $e){
 			throw new Exception("统计博物馆失败！");
