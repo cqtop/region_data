@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50620
 File Encoding         : 65001
 
-Date: 2016-10-20 11:19:08
+Date: 2016-10-20 14:23:54
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -58,7 +58,21 @@ CREATE TABLE `data_complex` (
   `is_wave_abnormal` tinyint(1) DEFAULT NULL COMMENT '是否有日波动超标',
   `is_value_abnormal` tinyint(1) DEFAULT NULL COMMENT '是否有异常值',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 综合统计';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 综合统计';
+
+-- ----------------------------
+-- Table structure for data_compliance
+-- ----------------------------
+DROP TABLE IF EXISTS `data_compliance`;
+CREATE TABLE `data_compliance` (
+  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `date` int(8) DEFAULT NULL COMMENT '日期',
+  `mid` int(10) DEFAULT NULL COMMENT '博物馆ID',
+  `env_name` varchar(100) DEFAULT NULL COMMENT '环境名称',
+  `param` varchar(50) DEFAULT NULL COMMENT '参数组合',
+  `compliance` float(2,2) DEFAULT NULL COMMENT '达标率',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境参数达标率';
 
 -- ----------------------------
 -- Table structure for data_envtype_param
@@ -138,20 +152,6 @@ CREATE TABLE `data_scatter` (
   `scatter` float(2,2) DEFAULT NULL COMMENT '离散系数',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境离散系数';
-
--- ----------------------------
--- Table structure for data_standard
--- ----------------------------
-DROP TABLE IF EXISTS `data_standard`;
-CREATE TABLE `data_standard` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` int(8) DEFAULT NULL COMMENT '日期',
-  `mid` int(10) DEFAULT NULL COMMENT '博物馆ID',
-  `env_name` varchar(100) DEFAULT NULL COMMENT '环境名称',
-  `param` varchar(50) DEFAULT NULL COMMENT '参数组合',
-  `standard` float(2,2) DEFAULT NULL COMMENT '达标率',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境参数达标率';
 
 -- ----------------------------
 -- Table structure for log
