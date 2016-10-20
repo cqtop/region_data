@@ -26,6 +26,10 @@ class Home extends CI_Controller {
 			$this->count_base();
 			lineMsg('博物馆基础数据统计完成');
 
+
+
+
+
 			$this->db->trans_commit();
 		}catch(Exception $e){
 			$this->db->trans_rollback();
@@ -41,6 +45,9 @@ class Home extends CI_Controller {
 			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb));
 
 			$data_base['count_relic'] = $this->api->count_relic();
+			$data_base['count_precious_relic'] = $this->api->count_precious_relic();
+			$data_base['count_fixed_exhibition'] = $this->api->count_fixed_exhibition();
+			$data_base['count_temporary_exhibition'] = $this->api->count_temporary_exhibition();
 
 			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_base')){
 				$this->db->where('mid', $this->museum['id'])->update('data_base', $data_base);
@@ -48,11 +55,20 @@ class Home extends CI_Controller {
 				$data_base['mid'] = $this->museum['id'];
 				$this->db->insert('data_base', $data_base);
 			}
+
 		}catch(Exception $e){
-			throw new Exception("统计博物馆失败！");
+			throw new Exception("统计博物馆基础数据失败！");
 		}
 	}
 
+	// 博物馆综合统计
+	function count_complex(){
+		try{
+			
+		}catch(Exception $e){
+			throw new Exception("统计博物馆综合统计失败！");
+		}
+	}
 
 	// 初始化数据库
 	private function initdb(){
