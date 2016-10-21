@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50620
 File Encoding         : 65001
 
-Date: 2016-10-20 14:23:54
+Date: 2016-10-21 13:22:59
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -41,8 +41,9 @@ CREATE TABLE `data_base` (
   `count_precious_relic` int(5) DEFAULT NULL COMMENT '珍贵文物数量',
   `count_fixed_exhibition` int(5) DEFAULT NULL COMMENT '固定展览数量',
   `count_temporary_exhibition` int(5) DEFAULT NULL COMMENT '临时展览数量',
+  `count_showcase` int(5) DEFAULT NULL COMMENT '展柜数量',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 基础数据';
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 博物馆基础数据';
 
 -- ----------------------------
 -- Table structure for data_complex
@@ -50,29 +51,38 @@ CREATE TABLE `data_base` (
 DROP TABLE IF EXISTS `data_complex`;
 CREATE TABLE `data_complex` (
   `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` int(8) DEFAULT NULL COMMENT '日期',
-  `mid` int(10) DEFAULT NULL COMMENT '博物馆ID',
-  `standard` float(2,2) DEFAULT NULL COMMENT '达标率',
+  `date` int(8) NOT NULL COMMENT '日期',
+  `mid` int(10) NOT NULL COMMENT '博物馆ID',
   `scatter_temp` float(2,2) DEFAULT NULL COMMENT '温度离散系数',
   `scatter_humidity` float(2,2) DEFAULT NULL COMMENT '湿度离散系数',
   `is_wave_abnormal` tinyint(1) DEFAULT NULL COMMENT '是否有日波动超标',
   `is_value_abnormal` tinyint(1) DEFAULT NULL COMMENT '是否有异常值',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 综合统计';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 博物馆综合统计';
 
 -- ----------------------------
--- Table structure for data_compliance
+-- Table structure for data_env
 -- ----------------------------
-DROP TABLE IF EXISTS `data_compliance`;
-CREATE TABLE `data_compliance` (
+DROP TABLE IF EXISTS `data_env`;
+CREATE TABLE `data_env` (
   `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` int(8) DEFAULT NULL COMMENT '日期',
-  `mid` int(10) DEFAULT NULL COMMENT '博物馆ID',
-  `env_name` varchar(100) DEFAULT NULL COMMENT '环境名称',
-  `param` varchar(50) DEFAULT NULL COMMENT '参数组合',
-  `compliance` float(2,2) DEFAULT NULL COMMENT '达标率',
+  `mid` int(10) NOT NULL COMMENT '博物馆ID',
+  `name` varchar(100) DEFAULT NULL COMMENT '环境名称',
+  `env_type` varchar(50) DEFAULT NULL COMMENT '环境类型',
+  `material_humidity` varchar(50) DEFAULT NULL COMMENT '湿度材质分类',
+  `material_light` varchar(50) DEFAULT NULL COMMENT '光照材质分类',
+  `temperature_upper` float(5,2) DEFAULT NULL COMMENT '温度标准上限',
+  `temperature_lower` float(5,2) DEFAULT NULL COMMENT '温度标准下限',
+  `humidity_upper` float(5,2) DEFAULT NULL COMMENT '湿度标准上限',
+  `humidity_lower` float(5,2) DEFAULT NULL COMMENT '湿度标准下限',
+  `light_upper` float(5,2) DEFAULT NULL COMMENT '光照标准上限',
+  `light_lower` float(5,2) DEFAULT NULL COMMENT '光照标准下限',
+  `uv_upper` float(5,2) DEFAULT NULL COMMENT '紫外标准上限',
+  `uv_lower` float(5,2) DEFAULT NULL COMMENT '紫外标准下限',
+  `voc_upper` float(5,2) DEFAULT NULL COMMENT 'VOC标准上限',
+  `voc_lower` float(5,2) DEFAULT NULL COMMENT 'VOC标准下限',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境参数达标率';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境表';
 
 -- ----------------------------
 -- Table structure for data_envtype_param
@@ -80,21 +90,54 @@ CREATE TABLE `data_compliance` (
 DROP TABLE IF EXISTS `data_envtype_param`;
 CREATE TABLE `data_envtype_param` (
   `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` int(8) DEFAULT NULL COMMENT '日期',
-  `mid` int(10) DEFAULT NULL COMMENT '博物馆ID',
+  `date` int(8) NOT NULL COMMENT '日期',
+  `mid` int(10) NOT NULL COMMENT '博物馆ID',
   `env_type` varchar(100) DEFAULT NULL COMMENT '环境类型',
   `param` varchar(20) DEFAULT NULL COMMENT '参数名称',
   `max` float(5,2) DEFAULT NULL COMMENT '最大值',
   `min` float(5,2) DEFAULT NULL COMMENT '最小值',
+  `max2` float(5,2) DEFAULT NULL COMMENT '最大值（剔除异常值）',
+  `min2` float(5,2) DEFAULT NULL COMMENT '最小值（剔除异常值）',
   `middle` float(5,2) DEFAULT NULL COMMENT '中位值',
   `average` float(5,2) DEFAULT NULL COMMENT '平均值（剔除异常值）',
   `count_abnormal` int(5) DEFAULT NULL COMMENT '异常值个数',
-  `max2` float(5,2) DEFAULT NULL COMMENT '最大值（剔除异常值）',
-  `min2` float(5,2) DEFAULT NULL COMMENT '最小值（剔除异常值）',
   `standard` float(5,2) DEFAULT NULL COMMENT '标准差',
-  `compliance` float(2,2) DEFAULT NULL COMMENT '达标率',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境类型参数';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境类型参数综合统计';
+
+-- ----------------------------
+-- Table structure for data_env_complex
+-- ----------------------------
+DROP TABLE IF EXISTS `data_env_complex`;
+CREATE TABLE `data_env_complex` (
+  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `date` int(8) NOT NULL COMMENT '日期',
+  `eid` int(10) NOT NULL COMMENT '环境ID',
+  `temperature_scatter` float(2,2) DEFAULT NULL COMMENT '温度离散系数',
+  `humidity_scatter` float(2,2) DEFAULT NULL COMMENT '湿度离散系数',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境综合统计';
+
+-- ----------------------------
+-- Table structure for data_env_compliance
+-- ----------------------------
+DROP TABLE IF EXISTS `data_env_compliance`;
+CREATE TABLE `data_env_compliance` (
+  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `date` int(8) NOT NULL COMMENT '日期',
+  `eid` int(10) NOT NULL COMMENT '环境ID',
+  `temperature_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
+  `temperature_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
+  `humidity_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
+  `humidity_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
+  `light_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
+  `light_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
+  `uv_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
+  `uv_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
+  `voc_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
+  `voc_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境参数达标统计';
 
 -- ----------------------------
 -- Table structure for data_env_param
@@ -102,21 +145,19 @@ CREATE TABLE `data_envtype_param` (
 DROP TABLE IF EXISTS `data_env_param`;
 CREATE TABLE `data_env_param` (
   `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` int(8) DEFAULT NULL COMMENT '日期',
-  `mid` int(10) DEFAULT NULL COMMENT '博物馆ID',
-  `env_name` varchar(100) DEFAULT NULL COMMENT '环境名称',
+  `date` int(8) NOT NULL COMMENT '日期',
+  `eid` int(10) NOT NULL COMMENT '环境ID',
   `param` varchar(20) DEFAULT NULL COMMENT '参数名称',
   `max` float(5,2) DEFAULT NULL COMMENT '最大值',
   `min` float(5,2) DEFAULT NULL COMMENT '最小值',
+  `max2` float(5,2) DEFAULT NULL COMMENT '最大值（剔除异常值）',
+  `min2` float(5,2) DEFAULT NULL COMMENT '最小值（剔除异常值）',
   `middle` float(5,2) DEFAULT NULL COMMENT '中位值',
   `average` float(5,2) DEFAULT NULL COMMENT '平均值（剔除异常值）',
   `count_abnormal` int(5) DEFAULT NULL COMMENT '异常值个数',
-  `max2` float(5,2) DEFAULT NULL COMMENT '最大值（剔除异常值）',
-  `min2` float(5,2) DEFAULT NULL COMMENT '最小值（剔除异常值）',
   `standard` float(5,2) DEFAULT NULL COMMENT '标准差',
-  `compliance` float(2,2) DEFAULT NULL COMMENT '达标率',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境参数';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境参数综合统计';
 
 -- ----------------------------
 -- Table structure for data_param
@@ -124,34 +165,19 @@ CREATE TABLE `data_env_param` (
 DROP TABLE IF EXISTS `data_param`;
 CREATE TABLE `data_param` (
   `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` int(8) DEFAULT NULL COMMENT '日期',
-  `mid` int(10) DEFAULT NULL COMMENT '博物馆ID',
+  `date` int(8) NOT NULL COMMENT '日期',
+  `mid` int(10) NOT NULL COMMENT '博物馆ID',
   `param` varchar(20) DEFAULT NULL COMMENT '参数名称',
   `max` float(5,2) DEFAULT NULL COMMENT '最大值',
   `min` float(5,2) DEFAULT NULL COMMENT '最小值',
+  `max2` float(5,2) DEFAULT NULL COMMENT '最大值（剔除异常值）',
+  `min2` float(5,2) DEFAULT NULL COMMENT '最小值（剔除异常值）',
   `middle` float(5,2) DEFAULT NULL COMMENT '中位值',
   `average` float(5,2) DEFAULT NULL COMMENT '平均值（剔除异常值）',
   `count_abnormal` int(5) DEFAULT NULL COMMENT '异常值个数',
-  `max2` float(5,2) DEFAULT NULL COMMENT '最大值（剔除异常值）',
-  `min2` float(5,2) DEFAULT NULL COMMENT '最小值（剔除异常值）',
   `standard` float(5,2) DEFAULT NULL COMMENT '标准差',
-  `compliance` float(2,2) DEFAULT NULL COMMENT '达标率',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 参数';
-
--- ----------------------------
--- Table structure for data_scatter
--- ----------------------------
-DROP TABLE IF EXISTS `data_scatter`;
-CREATE TABLE `data_scatter` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` int(8) DEFAULT NULL COMMENT '日期',
-  `mid` int(10) DEFAULT NULL COMMENT '博物馆ID',
-  `env_name` varchar(100) DEFAULT NULL COMMENT '环境名称',
-  `param` varchar(20) DEFAULT NULL COMMENT '温度或者湿度',
-  `scatter` float(2,2) DEFAULT NULL COMMENT '离散系数',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境离散系数';
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 博物馆参数综合统计';
 
 -- ----------------------------
 -- Table structure for log
