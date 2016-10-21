@@ -29,11 +29,11 @@ class Home extends CI_Controller {
 			$this->count_complex();
 			lineMsg('博物馆综合统计完成');
 
-			/*$this->count_param();
-			lineMsg('博物馆环境指标综合统计完成');
+			$this->count_param();
+			lineMsg('博物馆参数综合统计完成');
 
 			$this->count_envtype_param();
-			lineMsg('博物馆达标与稳定情况统计完成');*/
+			lineMsg('环境类型参数综合统计完成');
 
 
 
@@ -66,7 +66,7 @@ class Home extends CI_Controller {
 			}
 
 		}catch(Exception $e){
-			throw new Exception("统计博物馆基础数据失败！");
+			throw new Exception("博物馆基础数据统计失败！");
 		}
 	}
 
@@ -86,11 +86,11 @@ class Home extends CI_Controller {
 			$this->db->insert('data_complex', $data_complex);
 
 		}catch(Exception $e){
-			throw new Exception("统计博物馆综合数据失败！");
+			throw new Exception("博物馆综合统计失败！");
 		}
 	}
 
-	// 博物馆环境指标综合统计
+	// 博物馆参数综合统计
 	function count_param(){
 		try{
 			$data_param = array();
@@ -110,21 +110,29 @@ class Home extends CI_Controller {
 					3=>array("漆木器")
 			);
 			$mid = $this->museum['id'];
+
+			//温度统计
+			$data_param[] = $this->api->count_param_temperature($mid);
+			//湿度统计（分3类）
 			foreach($humidity as $k => $v){
 				$data_param[] = $this->api->count_param_humidity($mid,$k);
-
 			}
+			//光照统计（分3类）
 			foreach($light as $k => $v){
 				$data_param[] = $this->api->count_param_light($mid,$k);
 			}
+			//紫外统计
+			$data_param[] = $this->api->count_param_uv($mid);
+			//VOC统计
+			$data_param[] = $this->api->count_param_voc($mid);
 
 			$this->db->insert_batch("data_param",$data_param);
 		}catch (Exception $e){
-			throw new Exception("统计博物馆环境指标综合数据失败！");
+			throw new Exception("博物馆参数综合统计失败！");
 		}
 	}
 
-	// 博物馆达标与稳定情况统计
+	// 环境类型参数综合统计
 	public function count_envtype_param(){
 		try{
 			$data_envtype_param = array();
@@ -150,34 +158,56 @@ class Home extends CI_Controller {
 			);
 			$mid = $this->museum['id'];
 
-			//展厅统计温度、光照
+			//展厅-温度统计
+			$data_envtype_param[] = $this->api->count_envtype_showroom_temperature($mid);
+			//展厅-湿度统计（分3类）
 			foreach($humidity as $hum_k => $v){
 					$data_envtype_param[] = $this->api->count_envtype_showroom_humidity($mid,$hum_k);
 			}
+			//展厅-光照统计（分3类）
 			foreach($light as $lig_k => $v){
 					$data_envtype_param[] = $this->api->count_envtype_showroom_light($mid,$lig_k);
 			}
+			//展厅-紫外统计
+			$data_envtype_param[] = $this->api->count_envtype_showroom_uv($mid);
+			//展厅-VOC统计
+			$data_envtype_param[] = $this->api->count_envtype_showroom_voc($mid);
 
-			//展柜统计温度、光照
+
+			//展柜-温度统计
+			$data_envtype_param[] = $this->api->count_envtype_showcase_temperature($mid);
+			//展柜-湿度统计（分3类）
 			foreach($humidity as $hum_k => $v){
 				$data_envtype_param[] = $this->api->count_envtype_showcase_humidity($mid,$hum_k);
 			}
+			//展柜-光照统计（分3类）
 			foreach($light as $lig_k => $v){
 				$data_envtype_param[] = $this->api->count_envtype_showcase_light($mid,$lig_k);
 			}
+			//展柜-紫外统计
+			$data_envtype_param[] = $this->api->count_envtype_showcase_uv($mid);
+			//展柜-VOC统计
+			$data_envtype_param[] = $this->api->count_envtype_showcase_voc($mid);
 
-			//库房统计温度、光照
+			//库房-温度统计
+			$data_envtype_param[] = $this->api->count_envtype_storeroom_temperature($mid);
+			//库房-湿度统计（分3类）
 			foreach($humidity as $hum_k => $v){
 				$data_envtype_param[] = $this->api->count_envtype_storeroom_humidity($mid,$hum_k);
 			}
+			//库房-光照统计（分3类）
 			foreach($light as $lig_k => $v){
 				$data_envtype_param[] = $this->api->count_envtype_storeroom_light($mid,$lig_k);
 			}
+			//库房-紫外统计
+			$data_envtype_param[] = $this->api->count_envtype_storeroom_uv($mid);
+			//库房-VOC统计
+			$data_envtype_param[] = $this->api->count_envtype_storeroom_voc($mid);
 
 
 			$this->db->insert_batch("data_envtype_param",$data_envtype_param);
 		}catch (Exception $e){
-			throw new Exception("统计博物馆达标与稳定情况失败！");
+			throw new Exception("环境类型参数综合统计失败！");
 		}
 
 	}
