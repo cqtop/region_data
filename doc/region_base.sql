@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50620
 File Encoding         : 65001
 
-Date: 2016-10-21 13:22:59
+Date: 2016-10-21 13:54:37
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -36,7 +36,7 @@ CREATE TABLE `config` (
 DROP TABLE IF EXISTS `data_base`;
 CREATE TABLE `data_base` (
   `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `mid` int(10) NOT NULL,
+  `mid` int(10) NOT NULL COMMENT '博物馆ID',
   `count_relic` int(5) DEFAULT NULL COMMENT '馆藏文物数量',
   `count_precious_relic` int(5) DEFAULT NULL COMMENT '珍贵文物数量',
   `count_fixed_exhibition` int(5) DEFAULT NULL COMMENT '固定展览数量',
@@ -128,14 +128,14 @@ CREATE TABLE `data_env_compliance` (
   `eid` int(10) NOT NULL COMMENT '环境ID',
   `temperature_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
   `temperature_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
-  `humidity_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
-  `humidity_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
-  `light_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
-  `light_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
-  `uv_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
-  `uv_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
-  `voc_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
-  `voc_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
+  `humidity_total` int(5) DEFAULT NULL COMMENT '湿度数据总数',
+  `humidity_abnormal` int(5) DEFAULT NULL COMMENT '湿度未达标数',
+  `light_total` int(5) DEFAULT NULL COMMENT '光照数据总数',
+  `light_abnormal` int(5) DEFAULT NULL COMMENT '光照未达标数',
+  `uv_total` int(5) DEFAULT NULL COMMENT '紫外数据总数',
+  `uv_abnormal` int(5) DEFAULT NULL COMMENT '紫外未达标数',
+  `voc_total` int(5) DEFAULT NULL COMMENT 'VOC数据总数',
+  `voc_abnormal` int(5) DEFAULT NULL COMMENT 'VOC未达标数',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境参数达标统计';
 
