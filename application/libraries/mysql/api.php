@@ -8,6 +8,21 @@ class API{
         $this->db = $param['db'];
     }
 
+    /**
+     * 统计函数-计算标准差
+     * @param float $avg 平均值
+     * @param Array $list 队列数组
+     * @return float 标准差值
+     */
+    public function getStandardDeviation($avg, $list)
+    {
+        $total_var = 0;
+        foreach ($list as $lv){
+            $total_var += pow( ($lv - $avg), 2 );
+        }
+        return sqrt( $total_var / (count($list) ) );
+    }
+
     //博物馆基础数据-馆藏文物数量
     public function count_relic()
     {
@@ -22,7 +37,7 @@ class API{
         return $this->db['relic']->count_all_results('precious_relic');
     }
 
-    //博物馆基础数据-固定展览馆数量
+    //博物馆基础数据-固定展览文物数量
     public function count_fixed_exhibition()
     {
         //待确认
@@ -30,7 +45,7 @@ class API{
         return $this->db['relic']->count_all_results('fixed_exhibition');
     }
 
-    //博物馆基础数据-临时展览馆数量
+    //博物馆基础数据-临时展览文物数量
     public function count_temporary_exhibition()
     {
         //待确认
@@ -40,29 +55,54 @@ class API{
     //博物馆基础数据-展柜数量
     public function count_showcase()
     {
-        /*...*/
-        return 0;
-
+        return $this->db['base']->where("type","展柜")->count_all_results("env");
     }
 
     //博物馆综合统计-温度离散系数
     public function count_scatter_temp()
     {
-        //待确认
-        return 0;
+        $btime = strtotime('-10 day 00:00:00');
+        $etime = strtotime('-1 day 23:59:59');
+
+        $tempArr = $this->db['env']
+            //->query("select temperature from data_sensor where (equip_time between $btime and $etime) and temperature is not null")
+            ->select("temperature")
+            ->where("equip_time>",$btime)->where("equip_time<",$etime)->where("temperature<>","null")
+            ->get("data_sensor")
+            ->result_array();
+
+        if(empty($tempArr)){throw new Exception();}
+        $templist = array_column($tempArr,"temperature");//转为一维温度数组
+        $avg = array_sum($templist)/count($templist);//平均值
+        $sd = $this->getStandardDeviation($avg,$templist); //标准差
+
+        return round($sd/$avg,2);
     }
 
     //博物馆综合统计-湿度离散系数
     public function count_scatter_humidity()
     {
-        //待确认
-        return 0;
+        $btime = strtotime('-10 day 00:00:00');
+        $etime = strtotime('-10 day 23:59:59');
+
+        $humidityArr = $this->db['env']
+            ->select("humidity")
+            ->where("equip_time>",$btime)->where("equip_time<",$etime)->where("humidity<>","null")
+            ->get("data_sensor")
+            ->result_array();
+
+        if(empty($humidityArr)){throw new Exception();}
+        $humiditylist = array_column($humidityArr,"humidity");//转为一维数组
+        $avg = array_sum($humiditylist)/count($humiditylist);//平均值
+        $sd = $this->getStandardDeviation($avg,$humiditylist); //标准差
+
+        return round($sd/$avg,2);
     }
 
     //博物馆综合统计-是否有日波动超标
     public function count_is_wave_abnormal()
     {
-        //待确认
+        
         return 0;
     }
 

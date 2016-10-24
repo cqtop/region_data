@@ -29,11 +29,11 @@ class Home extends CI_Controller {
 			$this->count_complex();
 			lineMsg('博物馆综合统计完成');
 
-			$this->count_param();
+			/*$this->count_param();
 			lineMsg('博物馆参数综合统计完成');
 
 			$this->count_envtype_param();
-			lineMsg('环境类型参数综合统计完成');
+			lineMsg('环境类型参数综合统计完成');*/
 
 
 
@@ -77,11 +77,11 @@ class Home extends CI_Controller {
 			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb));
 
 			$data_complex['mid'] = $this->museum['id'];
-			$data_complex['date'] = date("Ymd");
-			$data_complex['scatter_temp'] = $this->api->count_scatter_temp();
+			$data_complex['date'] = date("Ymd",strtotime("-1 day"));
+			//$data_complex['scatter_temp'] = $this->api->count_scatter_temp();
 			$data_complex['scatter_humidity'] = $this->api->count_scatter_humidity();
-			$data_complex['is_wave_abnormal'] = $this->api->count_is_wave_abnormal();
-			$data_complex['is_value_abnormal'] = $this->api->count_is_value_abnormal();
+			//$data_complex['is_wave_abnormal'] = $this->api->count_is_wave_abnormal();
+			//$data_complex['is_value_abnormal'] = $this->api->count_is_value_abnormal();
 
 			$this->db->insert('data_complex', $data_complex);
 
