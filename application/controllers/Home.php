@@ -38,16 +38,22 @@ class Home extends CI_Controller {
 	function count_base(){
 		try{
 			$data_base = array();
-			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb));
+			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb,'mid'=>$this->museum['id']));
 
 			$data_base['count_relic'] = $this->api->count_relic();
-
 			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_base')){
 				$this->db->where('mid', $this->museum['id'])->update('data_base', $data_base);
 			}else{
 				$data_base['mid'] = $this->museum['id'];
 				$this->db->insert('data_base', $data_base);
 			}
+			
+			
+			
+
+			$this->api->data_env();
+			$this->api->data_analysis();
+
 		}catch(Exception $e){
 			throw new Exception("统计博物馆失败！");
 		}
