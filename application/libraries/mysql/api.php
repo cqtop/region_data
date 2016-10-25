@@ -26,7 +26,12 @@ class API{
     }
 
     public function data_env(){
-        $threshold = $this->db["relic"]->get("threshold")->result_array();
+        $datas = array();
+        $threshold_tb = $this->db["relic"]->table_exists("threshold");
+        $threshold = array();
+        if($threshold_tb){
+            $threshold = $this->db["relic"]->get("threshold")->result_array();
+        }
         $threshold_arr = array();
         foreach ($threshold as $v){
             $threshold_arr[$v["type"]] = $v;
@@ -59,14 +64,16 @@ class API{
                 }
                 
             }
-            if(!array_key_exists($category,$threshold_arr) && array_key_exists("其他",$threshold_arr)){
-                $category = "其他";
-            }
-            foreach ($params as $p){
-                $data[$p."_lower"] = $threshold_arr[$category][$p."_min"] !== ''?$threshold_arr[$category][$p."_min"]:null;
-                $data[$p."_upper"] = $threshold_arr[$category][$p."_max"] !== ''?$threshold_arr[$category][$p."_max"]:null;
-            }
 
+            if(!empty($threshold_arr)){
+                if(!array_key_exists($category,$threshold_arr) && array_key_exists("其他",$threshold_arr)){
+                    $category = "其他";
+                }
+                foreach ($params as $p){
+                    $data[$p."_lower"] = $threshold_arr[$category][$p."_min"] !== ''?$threshold_arr[$category][$p."_min"]:null;
+                    $data[$p."_upper"] = $threshold_arr[$category][$p."_max"] !== ''?$threshold_arr[$category][$p."_max"]:null;
+                }
+            }
             foreach ($other as $k => $o){
                 $data["material_".$k] = (array_key_exists("material_".$k,$data) && $data["material_".$k])?$data["material_".$k]:$o;
             }
@@ -75,19 +82,14 @@ class API{
             $data["sourceid"] = $v["env_no"];
             $data["name"] = $v["name"];
             $data["env_type"] = $v["type"];
-
-            $exist = $this->CI->db->select("id")->where(array("mid"=>$this->museum_id,"sourceid"=>$v["env_no"]))->get("data_env")->row_array();
-            if($exist){
-                $this->CI->db->where("id",$exist["id"])->update("data_env",$data);
-            }else{
-                $this->CI->db->insert("data_env",$data);
-            }
-
+            array_push($datas, $data);
         }
+        return $datas;
     }
 
     public function data_analysis() //环境综合统计  //环境参数达标统计 //环境参数综合统计
     {
+        $data_analysis = array();
         $areanos = $data_area = $env_arr = $threshold_arr = array();
         $params = array("temperature","humidity","light","uv","voc");
         $now_time = strtotime(date("Y-m-d"));
@@ -127,7 +129,7 @@ class API{
                     foreach ($value[$p] as $k =>$v){
                         $sum += pow($v - $average,2);
                     }
-                    $standard = sqrt($sum/sizeof($value[$p]));//标准差
+                    $standard = round(sqrt($sum/sizeof($value[$p])),2);//标准差
                     $scatter = round($standard/$average,2);//离散系数
                     if(in_array($p, $param)){
                         $data[$p."_scatter"] = $scatter;
@@ -168,13 +170,19 @@ class API{
                     $data_param["average"] = round(array_sum($normal)/sizeof($normal),2);
                     $data_param["count_abnormal"] = $data_compliance[$p."_abnormal"];
                     $data_param["standard"] = $standard;
-                    $this->CI->db->insert("data_env_param",$data_param);
+                    $data_analysis["param"][] = $data_param;
+                    //$this->CI->db->insert("data_env_param",$data_param);
+                }else{
+                    $data_compliance[$p."_total"] = 0;
+                    $data_compliance[$p."_abnormal"] = 0;
                 }
             }
-            $this->CI->db->insert("data_env_compliance",$data_compliance);
-            $this->CI->db->insert("data_env_complex",$data);
+            $data_analysis["compliance"][] = $data_compliance;
+            $data_analysis["complex"][] = $data;
+            //$this->CI->db->insert("data_env_compliance",$data_compliance);
+            //$this->CI->db->insert("data_env_complex",$data);
         }
-
+        return $data_analysis;
     }
 
 

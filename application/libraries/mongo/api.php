@@ -40,6 +40,7 @@ class API{
 
     public function data_analysis() //环境综合统计  //环境参数达标统计 //环境参数综合统计
     {
+        $data_analysis = array();
         $areanos = $data_area = $env_arr = $threshold_arr = array();
         $params = array("temperature","humidity","light","uv","voc");
         //$now_time = strtotime(date("Y-m-d"));
@@ -78,7 +79,7 @@ class API{
                     foreach ($value[$p] as $k =>$v){
                         $sum += pow($v - $average,2);
                     }
-                    $standard = sqrt($sum/sizeof($value[$p]));//标准差
+                    $standard = round(sqrt($sum/sizeof($value[$p])));//标准差
                     $scatter = round($standard/$average,2);//离散系数
                     if(in_array($p, $param)){
                         $data[$p."_scatter"] = $scatter;
@@ -119,16 +120,20 @@ class API{
                     $data_param["average"] = round(array_sum($normal)/sizeof($normal),2);
                     $data_param["count_abnormal"] = $data_compliance[$p."_abnormal"];
                     $data_param["standard"] = $standard;
-                    $this->CI->db->insert("data_env_param",$data_param);
+                    $data_analysis["param"][] = $data_param;
+                    //$this->CI->db->insert("data_env_param",$data_param);
                 }
             }
-            $this->CI->db->insert("data_env_compliance",$data_compliance);
-            $this->CI->db->insert("data_env_complex",$data);
+            $data_analysis["compliance"][] = $data_compliance;
+            $data_analysis["complex"][] = $data;
+            //$this->CI->db->insert("data_env_compliance",$data_compliance);
+            //$this->CI->db->insert("data_env_complex",$data);
         }
-
+        return $data_analysis;
     }
 
     public function data_env(){ //环境表,需最先执行以获取全部环境
+        $datas = array();
         foreach ($this->areas as $v) {
             $data = array();
             $other = array("humidity"=>3,"light"=>6);
@@ -176,15 +181,9 @@ class API{
             $data["sourceid"] = $v["No"];
             $data["name"] = $v["name"];
             $data["env_type"] = $v["type"];
-
-            $exist = $this->CI->db->select("id")->where(array("mid"=>$this->museum_id,"sourceid"=>$v["No"]))->get("data_env")->row_array();
-            if($exist){
-                $this->CI->db->where("id",$exist["id"])->update("data_env",$data);
-            }else{
-                $this->CI->db->insert("data_env",$data);
-            }
-
+            array_push($datas, $data);
         }
+        return $datas;
     }
 
 
