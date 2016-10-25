@@ -44,7 +44,7 @@ class API{
         $areanos = $data_area = $env_arr = $threshold_arr = array();
         $params = array("temperature","humidity","light","uv","voc");
         //$now_time = strtotime(date("Y-m-d"));
-        $now_time = strtotime("2016-01-05");
+        $now_time = strtotime("2016-01-02");
         foreach ($this->areas as $v) {
             $areanos[] = $v["No"];
         }
@@ -79,7 +79,7 @@ class API{
                     foreach ($value[$p] as $k =>$v){
                         $sum += pow($v - $average,2);
                     }
-                    $standard = round(sqrt($sum/sizeof($value[$p])));//标准差
+                    $standard = sqrt($sum/sizeof($value[$p]));//标准差
                     $scatter = round($standard/$average,2);//离散系数
                     if(in_array($p, $param)){
                         $data[$p."_scatter"] = $scatter;
@@ -119,9 +119,12 @@ class API{
                     }
                     $data_param["average"] = round(array_sum($normal)/sizeof($normal),2);
                     $data_param["count_abnormal"] = $data_compliance[$p."_abnormal"];
-                    $data_param["standard"] = $standard;
+                    $data_param["standard"] = round($standard,2);
                     $data_analysis["param"][] = $data_param;
                     //$this->CI->db->insert("data_env_param",$data_param);
+                }else{
+                    $data_compliance[$p."_total"] = 0;
+                    $data_compliance[$p."_abnormal"] = 0;
                 }
             }
             $data_analysis["compliance"][] = $data_compliance;

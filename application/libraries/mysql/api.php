@@ -129,7 +129,7 @@ class API{
                     foreach ($value[$p] as $k =>$v){
                         $sum += pow($v - $average,2);
                     }
-                    $standard = round(sqrt($sum/sizeof($value[$p])),2);//标准差
+                    $standard = sqrt($sum/sizeof($value[$p]));//标准差
                     $scatter = round($standard/$average,2);//离散系数
                     if(in_array($p, $param)){
                         $data[$p."_scatter"] = $scatter;
@@ -169,7 +169,7 @@ class API{
                     }
                     $data_param["average"] = round(array_sum($normal)/sizeof($normal),2);
                     $data_param["count_abnormal"] = $data_compliance[$p."_abnormal"];
-                    $data_param["standard"] = $standard;
+                    $data_param["standard"] = round($standard,2);
                     $data_analysis["param"][] = $data_param;
                     //$this->CI->db->insert("data_env_param",$data_param);
                 }else{
