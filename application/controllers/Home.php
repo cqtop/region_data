@@ -22,18 +22,17 @@ class Home extends CI_Controller {
 		// 事务
 		$this->db->trans_begin();
 		try{
-
 			$this->count_base();
 			lineMsg('博物馆基础数据统计完成');
 
 			$this->count_complex();
 			lineMsg('博物馆综合统计完成');
 
-			/*$this->count_param();
+			$this->count_param();
 			lineMsg('博物馆参数综合统计完成');
 
 			$this->count_envtype_param();
-			lineMsg('环境类型参数综合统计完成');*/
+			lineMsg('环境类型参数综合统计完成');
 
 
 
@@ -54,8 +53,6 @@ class Home extends CI_Controller {
 
 			$data_base['count_relic'] = $this->api->count_relic();
 			$data_base['count_precious_relic'] = $this->api->count_precious_relic();
-			$data_base['count_fixed_exhibition'] = $this->api->count_fixed_exhibition();
-			$data_base['count_temporary_exhibition'] = $this->api->count_temporary_exhibition();
 			$data_base['count_showcase'] = $this->api->count_showcase();
 
 			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_base')){
@@ -78,13 +75,12 @@ class Home extends CI_Controller {
 
 			$data_complex['mid'] = $this->museum['id'];
 			$data_complex['date'] = date("Ymd",strtotime("-1 day"));
-			//$data_complex['scatter_temp'] = $this->api->count_scatter_temp();
+			$data_complex['scatter_temp'] = $this->api->count_scatter_temp();
 			$data_complex['scatter_humidity'] = $this->api->count_scatter_humidity();
-			//$data_complex['is_wave_abnormal'] = $this->api->count_is_wave_abnormal();
-			//$data_complex['is_value_abnormal'] = $this->api->count_is_value_abnormal();
+			$data_complex['is_wave_abnormal'] = $this->api->count_is_wave_abnormal();
+			$data_complex['is_value_abnormal'] = $this->api->count_is_value_abnormal();
 
 			$this->db->insert('data_complex', $data_complex);
-
 		}catch(Exception $e){
 			throw new Exception("博物馆综合统计失败！");
 		}
@@ -96,18 +92,15 @@ class Home extends CI_Controller {
 			$data_param = array();
 			$this->load->library($this->museum['db_type']."/api",array('db'=>$this->subdb));
 
-			//$this->load->config("museum"); //读取湿度、光照配置文件
-			//$humidity = $this->config->item("humidity");
-			//$light = $this->config->item("light");
 			$humidity = array(
 					1=>array("石质","陶器","瓷器"),
 					2=>array("铁质","青铜"),
-					3=>array("纸质","壁画","纺织品","漆木器")
+					3=>array("纸质","壁画","纺织品","漆木器","其他")
 			);
 			$light = array(
 					1=>array("石质","陶器","瓷器","铁质","青铜"),
 					2=>array("纸质","壁画","纺织品"),
-					3=>array("漆木器")
+					3=>array("漆木器","其他")
 			);
 			$mid = $this->museum['id'];
 
@@ -126,6 +119,7 @@ class Home extends CI_Controller {
 			//VOC统计
 			$data_param[] = $this->api->count_param_voc($mid);
 
+
 			$this->db->insert_batch("data_param",$data_param);
 		}catch (Exception $e){
 			throw new Exception("博物馆参数综合统计失败！");
@@ -137,73 +131,59 @@ class Home extends CI_Controller {
 		try{
 			$data_envtype_param = array();
 			$this->load->library($this->museum['db_type']."/api",array('db'=>$this->subdb));
-
-			//$this->load->config("museum"); //读取湿度、光照配置文件
-			//$humidity = $this->config->item("humidity");
-			//$light = $this->config->item("light");
-			$envArr = array(
-					1=>"展厅",
-					2=>"展柜",
-					3=>"库房"
-			);
-			$humidity = array(
+			$envArr = array(1=>"展厅", 2=>"展柜", 3=>"库房");
+			$humidityArr = array(
 					1=>array("石质","陶器","瓷器"),
 					2=>array("铁质","青铜"),
 					3=>array("纸质","壁画","纺织品","漆木器")
 			);
-			$light = array(
+			$lightArr = array(
 					1=>array("石质","陶器","瓷器","铁质","青铜"),
 					2=>array("纸质","壁画","纺织品"),
 					3=>array("漆木器")
 			);
 			$mid = $this->museum['id'];
 
-			//展厅-温度统计
-			$data_envtype_param[] = $this->api->count_envtype_showroom_temperature($mid);
-			//展厅-湿度统计（分3类）
-			foreach($humidity as $hum_k => $v){
-					$data_envtype_param[] = $this->api->count_envtype_showroom_humidity($mid,$hum_k);
+			//温度统计
+			foreach ($envArr as $k=>$v) {
+				$result = $this->api->count_envtype_temperature($mid,$k);
+				if($result){
+					$data_envtype_param[] = $result;
+				}
 			}
-			//展厅-光照统计（分3类）
-			foreach($light as $lig_k => $v){
-					$data_envtype_param[] = $this->api->count_envtype_showroom_light($mid,$lig_k);
+			//湿度统计（分3类）
+			foreach ($envArr as $env_k=>$env_v) {
+				foreach($humidityArr as $hum_k => $v){
+					$result = $this->api->count_envtype_humidity($mid,$env_k,$hum_k);
+					if($result){
+						$data_envtype_param[] = $result;
+					}
+				}
 			}
-			//展厅-紫外统计
-			$data_envtype_param[] = $this->api->count_envtype_showroom_uv($mid);
-			//展厅-VOC统计
-			$data_envtype_param[] = $this->api->count_envtype_showroom_voc($mid);
-
-
-			//展柜-温度统计
-			$data_envtype_param[] = $this->api->count_envtype_showcase_temperature($mid);
-			//展柜-湿度统计（分3类）
-			foreach($humidity as $hum_k => $v){
-				$data_envtype_param[] = $this->api->count_envtype_showcase_humidity($mid,$hum_k);
+			//光照统计（分3类）
+			foreach ($envArr as $env_k=>$env_v) {
+				foreach($lightArr as $light_k => $v){
+					$result = $this->api->count_envtype_light($mid,$env_k,$light_k);
+					if($result){
+						$data_envtype_param[] = $result;
+					}
+				}
 			}
-			//展柜-光照统计（分3类）
-			foreach($light as $lig_k => $v){
-				$data_envtype_param[] = $this->api->count_envtype_showcase_light($mid,$lig_k);
+			//紫外统计
+			foreach($envArr as $k=>$v){
+				$result = $this->api->count_envtype_uv($mid,$k);
+				if($result){
+					$data_envtype_param[] = $result;
+				}
 			}
-			//展柜-紫外统计
-			$data_envtype_param[] = $this->api->count_envtype_showcase_uv($mid);
-			//展柜-VOC统计
-			$data_envtype_param[] = $this->api->count_envtype_showcase_voc($mid);
-
-			//库房-温度统计
-			$data_envtype_param[] = $this->api->count_envtype_storeroom_temperature($mid);
-			//库房-湿度统计（分3类）
-			foreach($humidity as $hum_k => $v){
-				$data_envtype_param[] = $this->api->count_envtype_storeroom_humidity($mid,$hum_k);
+			//VOC统计
+			foreach($envArr as $k=>$v){
+				$result = $this->api->count_envtype_voc($mid,$k);
+				if($result){
+					$data_envtype_param[] = $result;
+				}
 			}
-			//库房-光照统计（分3类）
-			foreach($light as $lig_k => $v){
-				$data_envtype_param[] = $this->api->count_envtype_storeroom_light($mid,$lig_k);
-			}
-			//库房-紫外统计
-			$data_envtype_param[] = $this->api->count_envtype_storeroom_uv($mid);
-			//库房-VOC统计
-			$data_envtype_param[] = $this->api->count_envtype_storeroom_voc($mid);
-
+			
 
 			$this->db->insert_batch("data_envtype_param",$data_envtype_param);
 		}catch (Exception $e){
