@@ -22,9 +22,13 @@ class Home extends CI_Controller {
 		// 事务
 		$this->db->trans_begin();
 		try{
-
+			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb,'mid'=>$this->museum['id']));
 			$this->count_base();
 			lineMsg('博物馆基础数据统计完成');
+			$this->data_env();
+			lineMsg('博物馆环境统计完成');
+			$this->data_analysis();
+			lineMsg('博物馆环境分析数据统计完成');
 
 			$this->db->trans_commit();
 		}catch(Exception $e){
@@ -38,18 +42,44 @@ class Home extends CI_Controller {
 	function count_base(){
 		try{
 			$data_base = array();
-			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb));
-
 			$data_base['count_relic'] = $this->api->count_relic();
-
 			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_base')){
 				$this->db->where('mid', $this->museum['id'])->update('data_base', $data_base);
 			}else{
 				$data_base['mid'] = $this->museum['id'];
 				$this->db->insert('data_base', $data_base);
 			}
+
 		}catch(Exception $e){
 			throw new Exception("统计博物馆失败！");
+		}
+	}
+
+	function data_env(){
+		try{
+			$datas = $this->api->data_env();
+			foreach ($datas as $data){
+				$exist = $this->db->select("id")->where(array("mid"=>$this->museum["id"],"sourceid"=>$data["sourceid"]))->get("data_env")->row_array();
+				if($exist){
+					$this->db->where("id",$exist["id"])->update("data_env",$data);
+				}else{
+					$this->db->insert("data_env",$data);
+				}
+			}
+
+		}catch(Exception $e){
+			throw new Exception("统计博物馆环境失败！");
+		}
+	}
+
+	function data_analysis(){
+		try{
+			$datas = $this->api->data_analysis();
+			foreach ($datas as $k => $data){
+				$this->db->insert_batch("data_env_".$k,$data);
+			}
+		}catch(Exception $e){
+			throw new Exception("统计博物馆环境分析数据失败！");
 		}
 	}
 
