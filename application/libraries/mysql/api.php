@@ -18,9 +18,9 @@ class API{
         $this->areas = array();
         $this->museum_id = $param["mid"];
         $this->getArea();
-        
-        $this->btime = strtotime('-8 day 00:00:00');
-        $this->etime = strtotime('-8 day 23:59:59');
+
+        $this->btime = strtotime('-1 day 00:00:00');
+        $this->etime = strtotime('-1 day 23:59:59');
         $this->getEnvNo();
         $this->getHumidityEnvNo();
         $this->getLightEnvNo();
@@ -164,12 +164,15 @@ class API{
     public function count_is_wave_abnormal()
     {
         $thArr = $this->db['env']
-            ->select("max(temperature) as tmax,max(humidity) as hmax,min(temperature) as tmin,min(humidity) as hmin")
+            ->select("env_no,max(temperature) as tmax,min(temperature) as tmin,max(humidity) as hmax,min(humidity) as hmin")
             ->where("equip_time>",$this->btime)->where("equip_time<",$this->etime)
+            ->where("env_no<>","null")->group_by("env_no")
+            ->having("MAX(temperature)-MIN(temperature)>=4 OR MAX(humidity)-MIN(humidity)>=5")
             ->get("data_sensor")->result_array();
-        if($thArr[0]['tmax']-$thArr[0]['tmin'] >=4)return 1;
-        if($thArr[0]['hmax']-$thArr[0]['hmin'] >=5)return 1;
-        return 0;
+
+        if(empty($thArr)) {return 0;}
+        else {return 1;}
+
     }
     //博物馆综合统计-是否有异常值
     public function count_is_value_abnormal()

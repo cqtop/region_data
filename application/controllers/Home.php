@@ -32,10 +32,10 @@ class Home extends CI_Controller {
 			lineMsg('博物馆参数综合统计完成');
 			$this->count_envtype_param();
 			lineMsg('环境类型参数综合统计完成');
-			/*$this->data_env();
+			$this->data_env();
 			lineMsg('博物馆环境统计完成');
 			$this->data_analysis();
-			lineMsg('博物馆环境分析数据统计完成');*/
+			lineMsg('博物馆环境分析数据统计完成');
 
 			$this->db->trans_commit();
 		}catch(Exception $e){
@@ -95,12 +95,12 @@ class Home extends CI_Controller {
 			//湿度统计（分3类）
 			foreach($humidity as $k => $v){
 				$res = $this->api->count_param_humidity($mid,false,$k);
-				if($res)$data_param[] = $res;
+				if($res) $data_param[] = $res;
 			}
 			//光照统计（分3类）
 			foreach($light as $k => $v){
 				$res = $this->api->count_param_light($mid,false,$k);
-				if($res)$data_param[] = $res;
+				if($res) $data_param[] = $res;
 			}
 			//紫外统计
 			$data_param[] = $this->api->count_param($mid,false,"uv");
@@ -162,6 +162,7 @@ class Home extends CI_Controller {
 					$data_envtype_param[] = $result;
 				}
 			}
+			
 
 			$this->db->insert_batch("data_envtype_param",$data_envtype_param);
 		}catch (Exception $e){

@@ -3,6 +3,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class API{
 
+    public $btime = null;//查询开始时间
+    public $etime = null;//查询结束时间
+    public $EnvNo = array();//环境编号数组(展厅+展柜+库房)
+    public $humidityEnvNo = array();//湿度环境编号
+    public $lightEnvNo = array();//光照环境编号
     public function __construct($param)
     {
         //$this->db = $param['db'];
@@ -14,6 +19,12 @@ class API{
         $this->areas = array();
         $this->museum_id = $param["mid"];
         $this->getArea();
+
+        $this->btime = strtotime('20160103 00:00:00');
+        $this->etime = strtotime('20160103 23:59:59');
+        $this->getEnvNo();
+        $this->getHumidityEnvNo();
+        $this->getLightEnvNo();
     }
 
     private function getArea(){
@@ -31,12 +42,405 @@ class API{
         $this->areas = $areas;
     }
 
-    public function count_relic()
+    //统计函数-计算标准差
+    public function getStandardDeviation($avg, $list)
     {
-        //return $this->db->relic->base->count();
-        return $this->mongo_db->count("relic.base");
+        $total_var = 0;
+        foreach ($list as $lv){
+            $total_var += pow( ($lv - $avg), 2 );
+        }
+        return sqrt( $total_var / (count($list) ) );
+    }
+    //统计函数-计算中位值
+    public function getMiddleValue($list){
+        sort($list);//升序排序
+        $num = count($list);
+        if($num%2 == 0){
+            $middleValue = ($list[$num/2]+$list[($num/2)-1])/2;
+        }else{
+            $middleValue = $list[floor($num/2)];
+        }
+        return $middleValue;
+    }
+    //统计函数-计算异常值
+    public function getAbnormalValue($list){
+        $avg = array_sum($list)/count($list);
+        $sd = $this->getStandardDeviation($avg,$list);
+        foreach($list as $v){
+            $Z = abs(($v-$avg)/$sd);
+            if($Z>3) return true;
+        }
+        return false;
+    }
+    //统计函数-获取博物馆展厅/展柜/库房的环境编号
+    public function getEnvNo(){
+        $_ids = array();
+        foreach(array(1=>"展厅",2=>"展柜",3=>"库房") as $k=>$v){
+            $_ids = $this->mongo_db->select(array("_id"))->where(array("name"=>$v))->getOne("area.type");
+            $area_nos =  $this->mongo_db->select(array("No"))->where(array("type"=>$_ids['_id']))->get("area.base");
+
+            $this->EnvNo[$k] = array_values(array_unique(array_column($area_nos,"No")));
+        }
+    }
+    //统计函数-获取湿度3个类别材质的环境编号
+    public function getHumidityEnvNo(){
+        //一类
+        $area_ids = $this->mongo_db->select(array("place"))->like("material","石|陶|瓷")->get("relic.base");
+        $area_nos = array();
+        foreach($area_ids as $v){
+            $datas = $this->mongo_db->select(array("No"))->where(array("_id"=>$v['place']))->getOne("area.base");
+            if($datas)array_push($area_nos,$datas);
+        }
+        $this->humidityEnvNo[1] = array_values(array_unique(array_column($area_nos,"No")));
+        //二类
+        $area_ids = $this->mongo_db->select(array("place"))->like("material","铁|铜")->get("relic.base");
+        $area_nos = array();
+        foreach($area_ids as $v){
+            $datas = $this->mongo_db->select(array("No"))->where(array("_id"=>$v['place']))->getOne("area.base");
+            if($datas)array_push($area_nos,$datas);
+        }
+        $this->humidityEnvNo[2] = array_values(array_unique(array_column($area_nos,"No")));
+        //三类
+        $area_ids = $this->mongo_db->select(array("material","place"))->get("relic.base");
+        foreach($area_ids as $k=>$v){
+            //排除一二类
+            if(strpos($v['material'],"石") !== false){unset($area_ids[$k]);}
+            elseif(strpos($v['material'],"陶") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"瓷") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"铁") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"铜") !== false)unset($area_ids[$k]);
+        }
+        $area_nos = array();
+        foreach($area_ids as $v){
+            $datas = $this->mongo_db->select(array("No"))->where(array("_id"=>$v['place']))->getOne("area.base");
+            if($datas)array_push($area_nos,$datas);
+        }
+        $this->humidityEnvNo[3] = array_values(array_unique(array_column($area_nos,"No")));
+    }
+    //统计函数-获取光照3个类别环境编号
+    public function getLightEnvNo(){
+        //一类
+        $area_ids = $this->mongo_db->select(array("place"))->like("material","石|陶|瓷|铁|铜")->get("relic.base");
+        $area_nos = array();
+        foreach($area_ids as $v){
+            $datas = $this->mongo_db->select(array("No"))->where(array("_id"=>$v['place']))->getOne("area.base");
+            if($datas)array_push($area_nos,$datas);
+        }
+
+        $this->lightEnvNo[1] = array_values(array_unique(array_column($area_nos,"No")));
+        //二类
+        $area_ids = $this->mongo_db->select(array("place"))->like("material","纸|画|布|绸")->get("relic.base");
+        $area_nos = array();
+        foreach($area_ids as $v){
+            $datas = $this->mongo_db->select(array("No"))->where(array("_id"=>$v['place']))->getOne("area.base");
+            if($datas)array_push($area_nos,$datas);
+        }
+        $this->lightEnvNo[2] = array_values(array_unique(array_column($area_nos,"No")));
+        //三类
+        $area_ids = $this->mongo_db->select(array("material","place"))->get("relic.base");
+        foreach($area_ids as $k=>$v){
+            //排除一二类
+            if(strpos($v['material'],"石") !== false){unset($area_ids[$k]);}
+            elseif(strpos($v['material'],"陶") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"瓷") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"铁") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"铜") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"纸") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"画") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"布") !== false)unset($area_ids[$k]);
+            elseif(strpos($v['material'],"绸") !== false)unset($area_ids[$k]);
+        }
+        $area_nos = array();
+        foreach($area_ids as $v){
+            $datas = $this->mongo_db->select(array("No"))->where(array("_id"=>$v['place']))->getOne("area.base");
+            if($datas)array_push($area_nos,$datas);
+        }
+        $this->lightEnvNo[3] = array_values(array_unique(array_column($area_nos,"No")));
     }
 
+    //博物馆基础数据-馆藏文物数量
+    public function count_relic()
+    {
+        return $this->mongo_db->count("relic.base");
+    }
+    //博物馆基础数据-珍贵文物数量
+    public function count_precious_relic()
+    {
+        return $this->mongo_db->where_in("level",array("一级","二级","三级"))->count("relic.base");
+    }
+    //博物馆基础数据-展柜数量
+    public function count_showcase()
+    {
+        $showcase_id = $this->mongo_db->select(array("_id"))->where(array("name"=>"展柜"))->getOne("area.type");
+        return $this->mongo_db->where(array("type"=>$showcase_id['_id']))->count('area.base');
+    }
+
+    //博物馆综合统计-离散系数
+    public function count_scatter($type)
+    {
+        $datas = $this->mongo_db->select(array("param"))->where_between("receivetime",$this->btime,$this->etime)->get("data.sensor.2016");
+        $list = array_column(array_column($datas,"param"),$type);//一维数据列表
+        $avg = array_sum($list)/count($list);//平均值
+        $sd = $this->getStandardDeviation($avg,$list); //标准差
+        return round($sd/$avg,2);
+    }
+    //博物馆综合统计-是否有日波动超标
+    public function count_is_wave_abnormal()
+    {
+        $datas = $this->mongo_db->select(array("areano","param"))->where_between("receivetime",$this->btime,$this->etime)->get("data.sensor.2016");
+        foreach($datas as $v){
+           if(array_key_exists("areano",$v)) {
+               if(array_key_exists("temperature",$v['param']) || array_key_exists("humidity",$v['param']))
+               $new_data[$v['areano']][] = $v['param'];//区域编号+参数值的三维数组
+           }
+        }
+        foreach($new_data as $v){
+            $temp_list = array_column($v,"temperature");
+            if(max($temp_list) - min($temp_list) >= 4){return 1;}
+            $humidity_list = array_column($v,"humidity");
+            if(max($humidity_list) - min($humidity_list) >= 5){return 1;}
+        }
+        return 0;
+    }
+    //博物馆综合统计-是否有异常值
+    public function count_is_value_abnormal()
+    {
+        $datas = $this->mongo_db->select(array("param.temperature","param.humidity"))->where_between("receivetime",$this->btime,$this->etime)->get("data.sensor.2016");
+
+        $temp_list = array_column(array_column($datas,"param"),"temperature");
+        if($this->getAbnormalValue($temp_list))return 1;
+
+        $humidity_list = array_column(array_column($datas,"param"),"humidity");
+        if($this->getAbnormalValue($humidity_list))return 1;
+
+        return 0;
+
+    }
+
+    //博物馆参数/环境类型参数综合统计-温度/UV/VOC
+    public function count_param($mid,$envId,$type){
+        $data = array();
+        $data["date"] = date("Ymd",$this->btime);
+        $data['mid'] = $mid;
+        $data['param'] = $type;
+        if($envId){
+            $envArr = array(1=>"showroom", 2=>"showcase", 3=>"storeroom");
+            $data['env_type'] = $envArr[$envId];
+            $envno_list = $this->EnvNo[$envId];
+            if(empty($envno_list)){return false;}
+
+            $datas = $this->mongo_db->select(array("equip_id","param.{$type}","receivetime"))
+                ->where_between("receivetime",$this->btime,$this->etime)
+                ->where_in("areano",$envno_list)
+                ->get("data.sensor.2016");
+        }else{
+            $datas = $this->mongo_db->select(array("equip_id","param.{$type}","receivetime"))
+                ->where_between("receivetime",$this->btime,$this->etime)
+                ->get("data.sensor.2016");
+        }
+
+        foreach($datas as $k=>$v){
+            if(!array_key_exists($type,$v['param'])){
+                unset($datas[$k]);
+            }
+        }
+        if(empty($datas)) return false;
+
+        $list = array_column(array_column($datas,"param"),$type);
+        $max = max($list);
+        $min = min($list);
+        $avg = array_sum($list)/count($list);//平均值
+        $middle = $this->getMiddleValue($list); //中位值
+        $sd = $this->getStandardDeviation($avg,$list);//标准差
+
+        //异常值
+        $abnormal_arr = array();
+        $normal_arr = array();
+        foreach($datas as $v){
+            if(array_key_exists($type,$v['param'])){
+                $Z = abs(($v['param'][$type]-$avg)/$sd);
+                if($Z>3) {
+                    $abnormal_arr[] = array($type=>$v['param'][$type],"equip_id"=>$v['equip_id'],"receivetime"=>$v['receivetime']);
+                }else{
+                    $normal_arr[] = $v['param'][$type];
+                }
+            }
+        }
+
+        if(empty($abnormal_arr)){
+            $max2 = $max;
+            $min2 = $min;
+            $count_abnormal = 0;
+        }else{
+            $max2 = max($normal_arr);
+            $min2 = min($normal_arr);
+            $count_abnormal = count($abnormal_arr);
+        }
+
+        $data['max'] = $max;
+        $data['min'] = $min;
+        $data['max2'] = $max2;
+        $data['min2'] = $min2;
+        $data['middle'] = round($middle,2);
+        $data['average'] = round($avg,2);
+        $data["standard"] = round($sd,2);
+        $data["count_abnormal"] = $count_abnormal;
+
+        return $data;
+    }
+
+
+    //博物馆参数/环境类型参数综合统计-湿度(分环境、材质)
+    public function count_param_humidity($mid,$envId,$classId){
+        $data = array();
+        $data["date"] = date("Ymd",$this->btime);
+        $data['mid'] = $mid;
+        $data['param'] = "humidity".$classId;
+
+        if($envId){
+            $envArr = array(1=>"showroom", 2=>"showcase", 3=>"storeroom");
+            $data['env_type'] = $envArr[$envId];
+            if(empty($this->EnvNo[$envId]) || empty($this->humidityEnvNo[$classId])) return false;
+            $envno_list = array_values(array_intersect($this->EnvNo[$envId],$this->humidityEnvNo[$classId]));
+        }else{
+            $envno_list = $this->humidityEnvNo[$classId];
+        }
+
+        if(empty($envno_list)){return false;} //不存在类别环境列表则退出该类别的统计
+        //昨日湿度数据记录
+        $datas = $this->mongo_db->select(array("equip_id","param.humidity","receivetime"))
+            ->where_between("receivetime",$this->btime,$this->etime)
+            ->where_in("areano",$envno_list)
+            ->get("data.sensor.2016");
+
+        foreach($datas as $k=>$v){
+            if(!array_key_exists("humidity",$v['param'])){
+                unset($datas[$k]);
+            }
+        }
+
+        if(empty($datas)) return false; //不存在湿度数据跳出该类别统计
+
+        $list = array_column(array_column($datas,"param"),"humidity");
+        $max = max($list);
+        $min = min($list);
+        $avg = array_sum($list)/count($list);//平均值
+        $middle = $this->getMiddleValue($list); //中位值
+        $sd = $this->getStandardDeviation($avg,$list);//标准差
+
+        //异常值
+        $abnormal_arr = array();
+        $normal_arr = array();
+        foreach($datas as $v){
+            if(array_key_exists("humidity",$v['param'])){
+                $Z = abs(($v['param']["humidity"]-$avg)/$sd);
+                if($Z>3) {
+                    $abnormal_arr[] = array("humidity"=>$v['param']["humidity"],"equip_id"=>$v['equip_id'],"receivetime"=>$v['receivetime']);
+                }else{
+                    $normal_arr[] = $v['param']["humidity"];
+                }
+            }
+        }
+
+        if(empty($abnormal_arr)){
+            $max2 = $max;
+            $min2 = $min;
+            $count_abnormal = 0;
+        }else{
+            $max2 = max($normal_arr);
+            $min2 = min($normal_arr);
+            $count_abnormal = count($abnormal_arr);
+        }
+
+        $data['max'] = $max;
+        $data['min'] = $min;
+        $data['max2'] = $max2;
+        $data['min2'] = $min2;
+        $data['middle'] = round($middle,2);
+        $data['average'] = round($avg,2);
+        $data["standard"] = round($sd,2);
+        $data["count_abnormal"] = $count_abnormal;
+
+
+        return $data;
+    }
+
+    //博物馆参数/环境类型参数综合统计-光照(分环境、材质)
+    public function count_param_light($mid,$envId,$classId)
+    {
+        $data = array();
+        $data["date"] = date("Ymd",$this->btime);
+        $data['mid'] = $mid;
+        $data['param'] = "light".$classId;
+
+        if($envId){
+            $envArr = array(1=>"showroom", 2=>"showcase", 3=>"storeroom");
+            $data['env_type'] = $envArr[$envId];
+            if(empty($this->EnvNo[$envId]) || empty($this->lightEnvNo[$classId])) return false;
+            $envno_list = array_values(array_intersect($this->EnvNo[$envId],$this->lightEnvNo[$classId]));
+        }else{
+            $envno_list = $this->lightEnvNo[$classId];
+        }
+        if(empty($envno_list)){return false;}
+
+        //昨日光照数据记录
+        $datas = $this->mongo_db->select(array("areano","equip_id","param.light","receivetime"))
+            ->where_between("receivetime",$this->btime,$this->etime)
+            ->where_in("areano",$envno_list)
+            ->get("data.sensor.2016");
+        foreach($datas as $k=>$v){
+            if(!array_key_exists("light",$v['param'])){
+                unset($datas[$k]);
+            }
+        }
+        if(empty($datas)){return false;}
+        $list = array_column(array_column($datas,"param"),"light");
+        $max = max($list);
+        $min = min($list);
+        $avg = array_sum($list)/count($list);//平均值
+        $middle = $this->getMiddleValue($list); //中位值
+        $sd = $this->getStandardDeviation($avg,$list);//标准差
+
+        //异常值
+        $abnormal_arr = array();
+        $normal_arr = array();
+        foreach($datas as $v){
+            if(array_key_exists("light",$v['param'])){
+                $Z = abs(($v['param']["light"]-$avg)/$sd);
+                if($Z>3) {
+                    $abnormal_arr[] = array("light"=>$v['param']["light"],"equip_id"=>$v['equip_id'],"receivetime"=>$v['receivetime']);
+                }else{
+                    $normal_arr[] = $v['param']["light"];
+                }
+            }
+        }
+
+        if(empty($abnormal_arr)){
+            $max2 = $max;
+            $min2 = $min;
+            $count_abnormal = 0;
+        }else{
+            $max2 = max($normal_arr);
+            $min2 = min($normal_arr);
+            $count_abnormal = count($abnormal_arr);
+        }
+
+        $data['max'] = $max;
+        $data['min'] = $min;
+        $data['max2'] = $max2;
+        $data['min2'] = $min2;
+        $data['middle'] = round($middle,2);
+        $data['average'] = round($avg,2);
+        $data["standard"] = round($sd,2);
+        $data["count_abnormal"] = $count_abnormal;
+
+        return $data;
+
+    }
+
+
+
+    /********************************/
 
     public function data_analysis() //环境综合统计  //环境参数达标统计 //环境参数综合统计
     {
