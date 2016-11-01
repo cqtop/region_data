@@ -68,14 +68,17 @@ class Home extends CI_Controller {
 	function count_complex(){
 		try{
 			$data_complex = array();
-			$data_complex['mid'] = $this->museum['id'];
-			$data_complex['date'] = date("Ymd",$this->api->btime);
-			$data_complex['scatter_temp'] = $this->api->count_scatter('temperature');
-			$data_complex['scatter_humidity'] = $this->api->count_scatter('humidity');
-			$data_complex['is_wave_abnormal'] = $this->api->count_is_wave_abnormal();
-			$data_complex['is_value_abnormal'] = $this->api->count_is_value_abnormal();
+			foreach(array(1=>"showroom", 2=>"showcase", 3=>"storeroom") as $k=>$v){
+				$data_complex[$k-1]['mid'] = $this->museum['id'];
+				$data_complex[$k-1]['env_type'] = $v;
+				$data_complex[$k-1]['date'] = date("Ymd",$this->api->btime);
+				$data_complex[$k-1]['scatter_temp'] = $this->api->count_scatter($k,'temperature');
+				$data_complex[$k-1]['scatter_humidity'] = $this->api->count_scatter($k,'humidity');
+				$data_complex[$k-1]['is_wave_abnormal'] = $this->api->count_is_wave_abnormal($k);
+				$data_complex[$k-1]['is_value_abnormal'] = $this->api->count_is_value_abnormal($k);
+			}
 
-			$this->db->insert('data_complex', $data_complex);
+			$this->db->insert_batch('data_complex', $data_complex);
 		}catch(Exception $e){
 			throw new Exception("博物馆综合统计失败！");
 		}

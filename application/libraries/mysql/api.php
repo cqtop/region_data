@@ -24,6 +24,7 @@ class API{
         $this->getEnvNo();
         $this->getHumidityEnvNo();
         $this->getLightEnvNo();
+
     }
 
     private function getArea(){
@@ -65,16 +66,13 @@ class API{
     //统计函数-获取博物馆展厅/展柜/库房的环境编号
     public function getEnvNo(){
             $envno_arr = $this->db['base']->select("distinct(env_no)")->where("env_no<>","null")->where("type","展厅")->get("env")->result_array();
-            $list1 = array_column($envno_arr,"env_no");
-            $this->EnvNo[1]=$list1;
+            $this->EnvNo[1] = array_column($envno_arr,"env_no");
 
             $envno_arr = $this->db['base']->select("distinct(env_no)")->where("env_no<>","null")->where("type","展柜")->get("env")->result_array();
-            $list2 = array_column($envno_arr,"env_no");
-            $this->EnvNo[2]=$list2;
+            $this->EnvNo[2] = array_column($envno_arr,"env_no");
 
             $envno_arr = $this->db['base']->select("distinct(env_no)")->where("env_no<>","null")->where("type","库房")->get("env")->result_array();
-            $list3 = array_column($envno_arr,"env_no");
-            $this->EnvNo[3]=$list3;
+            $this->EnvNo[3] = array_column($envno_arr,"env_no");
     }
     //统计函数-获取湿度3个类别材质的环境编号
     public function getHumidityEnvNo(){
@@ -149,24 +147,26 @@ class API{
     }
 
     //博物馆综合统计-离散系数
-    public function count_scatter($type)
+    public function count_scatter($envId,$type)
     {
         $Arr = $this->db['env']
             ->select($type)->where("equip_time>", $this->btime)->where("equip_time<",$this->etime)
-            ->where("$type<>","null")->get("data_sensor")->result_array();
-        if(empty($Arr)){lineMsg("{$type}记录不存在！");throw new Exception();}
+            ->where("$type<>","null")->where_in("env_no",$this->EnvNo[$envId])
+            ->get("data_sensor")->result_array();
+
         $list = array_column($Arr,$type);//转为一维
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
+
         return round($sd/$avg,2);
     }
     //博物馆综合统计-是否有日波动超标
-    public function count_is_wave_abnormal()
+    public function count_is_wave_abnormal($envId)
     {
         $thArr = $this->db['env']
             ->select("env_no,max(temperature) as tmax,min(temperature) as tmin,max(humidity) as hmax,min(humidity) as hmin")
             ->where("equip_time>",$this->btime)->where("equip_time<",$this->etime)
-            ->where("env_no<>","null")->group_by("env_no")
+            ->where_in("env_no",$this->EnvNo[$envId])->group_by("env_no")
             ->having("MAX(temperature)-MIN(temperature)>=4 OR MAX(humidity)-MIN(humidity)>=5")
             ->get("data_sensor")->result_array();
 
@@ -175,13 +175,14 @@ class API{
 
     }
     //博物馆综合统计-是否有异常值
-    public function count_is_value_abnormal()
+    public function count_is_value_abnormal($envId)
     {
         //昨日温湿度数据
         $thArr = $this->db['env']
             ->select("temperature,humidity")
             ->where("equip_time>",$this->btime)->where("equip_time<",$this->etime)
             ->where("temperature<>","null")->where("humidity<>","null")
+            ->where_in("env_no",$this->EnvNo[$envId])
             ->get("data_sensor")->result_array();
         $temp_list = array_column($thArr,"temperature");
         $humidity_list = array_column($thArr,"humidity");
@@ -216,7 +217,6 @@ class API{
             $arr = $this->db['env']
                 ->select("env_no,equip_no,$type,equip_time")->where("equip_time>",$this->btime)->where("equip_time<",$this->etime)
                 ->where("{$type}<>","null")->get("data_sensor")->result_array();
-            if(empty($arr)){lineMsg("{$type}记录不存在！");throw new Exception();}
         }
 
         $list = array_column($arr,$type);
@@ -266,7 +266,7 @@ class API{
         if($envId){
             $envArr = array(1=>"showroom", 2=>"showcase", 3=>"storeroom");
             $data['env_type'] = $envArr[$envId];
-            $envno_list = array_intersect($this->EnvNo[$envId],$this->humidityEnvNo[$classId]);
+            $envno_list = array_values(array_intersect($this->EnvNo[$envId],$this->humidityEnvNo[$classId]));
             if(empty($envno_list)){return false;}
         }else{
             $envno_list = $this->humidityEnvNo[$classId];
@@ -327,7 +327,7 @@ class API{
         if($envId){
             $envArr = array(1=>"showroom", 2=>"showcase", 3=>"storeroom");
             $data['env_type'] = $envArr[$envId];
-            $envno_list = array_intersect($this->EnvNo[$envId],$this->lightEnvNo[$classId]);
+            $envno_list = array_values(array_intersect($this->EnvNo[$envId],$this->lightEnvNo[$classId]));
             if(empty($envno_list)){return false;}
         }else{
             $envno_list = $this->lightEnvNo[$classId];

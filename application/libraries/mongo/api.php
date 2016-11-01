@@ -20,8 +20,8 @@ class API{
         $this->museum_id = $param["mid"];
         $this->getArea();
 
-        $this->btime = strtotime('20160103 00:00:00');
-        $this->etime = strtotime('20160103 23:59:59');
+        $this->btime = strtotime('20160104 00:00:00');
+        $this->etime = strtotime('20160104 23:59:59');
         $this->getEnvNo();
         $this->getHumidityEnvNo();
         $this->getLightEnvNo();
@@ -176,18 +176,22 @@ class API{
     }
 
     //博物馆综合统计-离散系数
-    public function count_scatter($type)
+    public function count_scatter($envId,$type)
     {
-        $datas = $this->mongo_db->select(array("param"))->where_between("receivetime",$this->btime,$this->etime)->get("data.sensor.2016");
+        $datas = $this->mongo_db->select(array("param"))->where_between("receivetime",$this->btime,$this->etime)
+            ->where_in("areano",$this->EnvNo[$envId])->get("data.sensor.2016");
+        if(empty($datas))return "NULL";
         $list = array_column(array_column($datas,"param"),$type);//一维数据列表
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
         return round($sd/$avg,2);
     }
     //博物馆综合统计-是否有日波动超标
-    public function count_is_wave_abnormal()
+    public function count_is_wave_abnormal($envId)
     {
-        $datas = $this->mongo_db->select(array("areano","param"))->where_between("receivetime",$this->btime,$this->etime)->get("data.sensor.2016");
+        $datas = $this->mongo_db->select(array("areano","param"))->where_between("receivetime",$this->btime,$this->etime)
+            ->where_in("areano",$this->EnvNo[$envId])->get("data.sensor.2016");
+        if(empty($datas))return "NULL";
         foreach($datas as $v){
            if(array_key_exists("areano",$v)) {
                if(array_key_exists("temperature",$v['param']) || array_key_exists("humidity",$v['param']))
@@ -203,10 +207,12 @@ class API{
         return 0;
     }
     //博物馆综合统计-是否有异常值
-    public function count_is_value_abnormal()
+    public function count_is_value_abnormal($envId)
     {
-        $datas = $this->mongo_db->select(array("param.temperature","param.humidity"))->where_between("receivetime",$this->btime,$this->etime)->get("data.sensor.2016");
+        $datas = $this->mongo_db->select(array("param.temperature","param.humidity"))->where_between("receivetime",$this->btime,$this->etime)
+            ->where_in("areano",$this->EnvNo[$envId])->get("data.sensor.2016");
 
+        if(empty($datas))return "NULL";
         $temp_list = array_column(array_column($datas,"param"),"temperature");
         if($this->getAbnormalValue($temp_list))return 1;
 
