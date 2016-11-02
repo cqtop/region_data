@@ -20,8 +20,8 @@ class API{
         $this->museum_id = $param["mid"];
         $this->getArea();
 
-        $this->btime = strtotime('20160104 00:00:00');
-        $this->etime = strtotime('20160104 23:59:59');
+        $this->btime = strtotime('-1 day 00:00:00');
+        $this->etime = strtotime('-1 day 23:59:59');
         $this->getEnvNo();
         $this->getHumidityEnvNo();
         $this->getLightEnvNo();
@@ -225,12 +225,13 @@ class API{
 
     //博物馆参数/环境类型参数综合统计-温度/UV/VOC
     public function count_param($mid,$envId,$type){
+        $param = array("temperature"=>7,"uv"=>8,"voc"=>9);
         $data = array();
         $data["date"] = date("Ymd",$this->btime);
         $data['mid'] = $mid;
-        $data['param'] = $type;
+        $data['param'] = $param[$type];
         if($envId){
-            $envArr = array(1=>"showroom", 2=>"showcase", 3=>"storeroom");
+            $envArr = array(1=>"展厅", 2=>"展柜", 3=>"库房");
             $data['env_type'] = $envArr[$envId];
             $envno_list = $this->EnvNo[$envId];
             if(empty($envno_list)){return false;}
@@ -281,6 +282,7 @@ class API{
             $max2 = max($normal_arr);
             $min2 = min($normal_arr);
             $count_abnormal = count($abnormal_arr);
+            $avg = array_sum($normal_arr)/count($normal_arr);
         }
 
         $data['max'] = $max;
@@ -298,13 +300,14 @@ class API{
 
     //博物馆参数/环境类型参数综合统计-湿度(分环境、材质)
     public function count_param_humidity($mid,$envId,$classId){
+        $param = array(1=>1,2=>2,3=>3);
         $data = array();
         $data["date"] = date("Ymd",$this->btime);
         $data['mid'] = $mid;
-        $data['param'] = "humidity".$classId;
+        $data['param'] = $param[$classId];
 
         if($envId){
-            $envArr = array(1=>"showroom", 2=>"showcase", 3=>"storeroom");
+            $envArr = array(1=>"展厅", 2=>"展柜", 3=>"库房");
             $data['env_type'] = $envArr[$envId];
             if(empty($this->EnvNo[$envId]) || empty($this->humidityEnvNo[$classId])) return false;
             $envno_list = array_values(array_intersect($this->EnvNo[$envId],$this->humidityEnvNo[$classId]));
@@ -356,6 +359,7 @@ class API{
             $max2 = max($normal_arr);
             $min2 = min($normal_arr);
             $count_abnormal = count($abnormal_arr);
+            $avg = array_sum($normal_arr)/count($normal_arr);
         }
 
         $data['max'] = $max;
@@ -374,13 +378,14 @@ class API{
     //博物馆参数/环境类型参数综合统计-光照(分环境、材质)
     public function count_param_light($mid,$envId,$classId)
     {
+        $param = array(1=>4,2=>5,3=>6);
         $data = array();
         $data["date"] = date("Ymd",$this->btime);
         $data['mid'] = $mid;
-        $data['param'] = "light".$classId;
+        $data['param'] = $param[$classId];
 
         if($envId){
-            $envArr = array(1=>"showroom", 2=>"showcase", 3=>"storeroom");
+            $envArr = array(1=>"展厅", 2=>"展柜", 3=>"库房");
             $data['env_type'] = $envArr[$envId];
             if(empty($this->EnvNo[$envId]) || empty($this->lightEnvNo[$classId])) return false;
             $envno_list = array_values(array_intersect($this->EnvNo[$envId],$this->lightEnvNo[$classId]));
@@ -429,6 +434,7 @@ class API{
             $max2 = max($normal_arr);
             $min2 = min($normal_arr);
             $count_abnormal = count($abnormal_arr);
+            $avg = array_sum($normal_arr)/count($normal_arr);
         }
 
         $data['max'] = $max;
