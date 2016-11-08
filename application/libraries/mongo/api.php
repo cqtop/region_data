@@ -35,8 +35,19 @@ class API{
             $ids[] = $v["_id"];
             $ty_arr["'".$v["_id"]->{'$id'}."'"] = $v["name"];
         }
-        $areas = $this->mongo_db->select(array("No","_id","name","type","threshold"))->where_in("type", $ids)->get("area.base");
+        $areas = $this->mongo_db->select(array("No","_id","name","type","threshold","belong"))->where_in("type", $ids)->get("area.base");
+        $nums = array();
         foreach ($areas as $k => $v){
+            $nums["'".$v["_id"]->{'$id'}."'"] = $v["No"];
+        }
+        foreach ($areas as $k => $v){
+            if(array_key_exists("belong",$v)){
+                $belong_id = "'".$v["belong"]->{'$id'}."'";
+                if(array_key_exists($belong_id,$nums)){
+                    $areas[$k]["pid"] = $nums[$belong_id];
+                }
+
+            }
             $areas[$k]["type"] = $ty_arr["'".$v["type"]->{'$id'}."'"];
         }
         $this->areas = $areas;
@@ -594,6 +605,9 @@ class API{
             $data["sourceid"] = $v["No"];
             $data["name"] = $v["name"];
             $data["env_type"] = $v["type"];
+            if(array_key_exists("pid",$v)){
+                $data["pid"] = $v["pid"];
+            }
             array_push($datas, $data);
         }
         return $datas;

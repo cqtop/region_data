@@ -29,7 +29,7 @@ class API{
 
     private function getArea(){
         $ty = array("展厅", "展柜", "库房");
-        $areas = $this->db["base"]->select("env_no,name,type")->where_in("type", $ty)->get("env")->result_array();
+        $areas = $this->db["base"]->select("env_no,parent_env_no,name,type")->where_in("type", $ty)->get("env")->result_array();
         $this->areas = $areas;
     }
 
@@ -437,6 +437,7 @@ class API{
             $data["sourceid"] = $v["env_no"];
             $data["name"] = $v["name"];
             $data["env_type"] = $v["type"];
+            $data["pid"] = $v["parent_env_no"];
             array_push($datas, $data);
         }
         return $datas;
