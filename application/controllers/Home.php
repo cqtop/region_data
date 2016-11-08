@@ -68,7 +68,7 @@ class Home extends CI_Controller {
 	function count_complex(){
 		try{
 			$data_complex = array();
-			foreach(array(1=>"showroom", 2=>"showcase", 3=>"storeroom") as $k=>$v){
+			foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
 				$data_complex[$k-1]['mid'] = $this->museum['id'];
 				$data_complex[$k-1]['env_type'] = $v;
 				$data_complex[$k-1]['date'] = date("Ymd",$this->api->btime);
@@ -90,6 +90,7 @@ class Home extends CI_Controller {
 			$this->load->config('texture');
 			$humidity = $this->config->item("humidity");
 			$light = $this->config->item("light");
+
 			$data_param = array();
 			$mid = $this->museum['id'];
 
@@ -165,7 +166,6 @@ class Home extends CI_Controller {
 					$data_envtype_param[] = $result;
 				}
 			}
-			
 
 			$this->db->insert_batch("data_envtype_param",$data_envtype_param);
 		}catch (Exception $e){
