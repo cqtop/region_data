@@ -28,14 +28,8 @@ class Home extends CI_Controller {
 			lineMsg('博物馆基础数据统计完成');
 			$this->count_complex();
 			lineMsg('博物馆综合统计完成');
-			$this->count_param();
-			lineMsg('博物馆参数综合统计完成');
-			$this->count_envtype_param();
-			lineMsg('环境类型参数综合统计完成');
-			$this->data_env();
-			lineMsg('博物馆环境统计完成');
-			$this->data_analysis();
-			lineMsg('博物馆环境分析数据统计完成');
+
+
 
 			$this->db->trans_commit();
 		}catch(Exception $e){
@@ -69,13 +63,8 @@ class Home extends CI_Controller {
 		try{
 			$data_complex = array();
 			foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
-				$data_complex[$k-1]['mid'] = $this->museum['id'];
-				$data_complex[$k-1]['env_type'] = $v;
-				$data_complex[$k-1]['date'] = date("Ymd",$this->api->btime);
-				$data_complex[$k-1]['scatter_temp'] = $this->api->count_scatter($k,'temperature');
-				$data_complex[$k-1]['scatter_humidity'] = $this->api->count_scatter($k,'humidity');
-				$data_complex[$k-1]['is_wave_abnormal'] = $this->api->count_is_wave_abnormal($k);
-				$data_complex[$k-1]['is_value_abnormal'] = $this->api->count_is_value_abnormal($k);
+				$result = $this->api->count_data_complex($k);
+				if($result) $data_complex[] = $result;
 			}
 
 			$this->db->insert_batch('data_complex', $data_complex);
@@ -84,123 +73,6 @@ class Home extends CI_Controller {
 		}
 	}
 
-	// 博物馆参数综合统计
-	function count_param(){
-		try{
-			$this->load->config('texture');
-			$humidity = $this->config->item("humidity");
-			$light = $this->config->item("light");
-
-			$data_param = array();
-			$mid = $this->museum['id'];
-
-			//温度统计
-			$data_param[] = $this->api->count_param($mid,false,"temperature");
-			//湿度统计（分3类）
-			foreach($humidity as $k => $v){
-				$res = $this->api->count_param_humidity($mid,false,$k);
-				if($res) $data_param[] = $res;
-			}
-			//光照统计（分3类）
-			foreach($light as $k => $v){
-				$res = $this->api->count_param_light($mid,false,$k);
-				if($res) $data_param[] = $res;
-			}
-			//紫外统计
-			$data_param[] = $this->api->count_param($mid,false,"uv");
-			//VOC统计
-			$data_param[] = $this->api->count_param($mid,false,"voc");
-
-			$this->db->insert_batch("data_param",$data_param);
-		}catch (Exception $e){
-			throw new Exception("博物馆参数综合统计失败！");
-		}
-	}
-
-	// 环境类型参数综合统计
-	public function count_envtype_param(){
-		try{
-			$data_envtype_param = array();
-			$this->load->config('texture');
-			$humidityArr = $this->config->item("humidity");
-			$lightArr = $this->config->item("light");
-			$envArr = array(1=>"展厅", 2=>"展柜", 3=>"库房");
-			$mid = $this->museum['id'];
-
-			//温度统计
-			foreach ($envArr as $k=>$v) {
-				$result = $this->api->count_param($mid,$k,"temperature");
-				if($result){
-					$data_envtype_param[] = $result;
-				}
-			}
-			//湿度统计（分3类）
-			foreach ($envArr as $env_k=>$env_v) {
-				foreach($humidityArr as $hum_k => $v){
-					$result = $this->api->count_param_humidity($mid,$env_k,$hum_k);
-					if($result){
-						$data_envtype_param[] = $result;
-					}
-				}
-			}
-			//光照统计（分3类）
-			foreach ($envArr as $env_k=>$env_v) {
-				foreach($lightArr as $light_k => $v){
-					$result = $this->api->count_param_light($mid,$env_k,$light_k);
-					if($result){
-						$data_envtype_param[] = $result;
-					}
-				}
-			}
-			//紫外统计
-			foreach($envArr as $k=>$v){
-				$result = $this->api->count_param($mid,$k,"uv");
-				if($result){
-					$data_envtype_param[] = $result;
-				}
-			}
-			//VOC统计
-			foreach($envArr as $k=>$v){
-				$result = $this->api->count_param($mid,$k,"voc");
-				if($result){
-					$data_envtype_param[] = $result;
-				}
-			}
-
-			$this->db->insert_batch("data_envtype_param",$data_envtype_param);
-		}catch (Exception $e){
-			throw new Exception("环境类型参数综合统计失败！");
-		}
-
-	}
-
-	function data_env(){
-		try{
-			$datas = $this->api->data_env();
-			foreach ($datas as $data){
-				$exist = $this->db->select("id")->where(array("mid"=>$this->museum["id"],"sourceid"=>$data["sourceid"]))->get("data_env")->row_array();
-				if($exist){
-					$this->db->where("id",$exist["id"])->update("data_env",$data);
-				}else{
-					$this->db->insert("data_env",$data);
-				}
-			}
-
-		}catch(Exception $e){
-			throw new Exception("统计博物馆环境失败！");
-		}
-	}
-
-	function data_analysis(){
-		try{
-			$datas = $this->api->data_analysis();
-			foreach ($datas as $k => $data){
-				$this->db->insert_batch("data_env_".$k,$data);
-			}
-		}catch(Exception $e){
-			throw new Exception("统计博物馆环境分析数据失败！");
-		}
-	}
 
 
 	// 初始化数据库
@@ -242,8 +114,6 @@ class Home extends CI_Controller {
 		}
 
 	}
-
-
 
 
 	// 测试
