@@ -127,7 +127,7 @@ class API{
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
 
-        return round($sd/$avg,2);//离散系数
+        return round($sd/$avg,3);//离散系数
     }
     //博物馆综合统计-各参数达标总和未达标总和
     public function count_total_abnormal($env_id){
