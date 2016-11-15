@@ -18,9 +18,8 @@ class API{
         $this->museum_id = $param["mid"];
         $this->getArea();
 
-        $this->btime = strtotime('-1 day 00:00:00'); //洛阳 0527 
-        $this->etime = strtotime('-1 day 23:59:59');
         $this->getEnvNo();
+
     }
 
     private function getArea(){
@@ -91,12 +90,31 @@ class API{
 
 
     //博物馆综合统计
-    public function count_data_complex($env_id){
+    public function count_data_complex($date,$env_id){
+        //判断日期 转换对应时间戳
+        switch ($date){
+            case "yesterday": //昨天
+                $this->btime = strtotime('-1 day 00:00:00');
+                $this->etime = strtotime('-1 day 23:59:59');
+                $date_str = "D".date("Ymd",$this->btime);
+                break;
+            case "week": //本周
+                $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
+                $this->etime = strtotime('-1 day 23:59:59');
+                $date_str = "W".date("YW");
+                break;
+            case "month": //本月
+                $this->btime = mktime(0,0,0,date('m'),1,date('y'));
+                $this->etime = strtotime('-1 day 23:59:59');
+                $date_str = "M".date("Ym");
+                break;
+        }
+
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
         $data = array();
         if(!$this->EnvNo[$env_id]) return false;
 
-        $data['date'] = date("Ymd",$this->btime);
+        $data['date'] = $date_str;
         $data['env_type'] = $env_type[$env_id];
         $data['mid'] = $this->museum_id;
         $data['scatter_temperature'] = $this->count_scatter($env_id,'temperature');
@@ -122,6 +140,7 @@ class API{
             ->where_in("env_no",$this->EnvNo[$env_id])
             ->get("data_sensor")
             ->result_array();
+
         if(!$Arr) return null;
         $list = array_column($Arr,$type);//转为一维
         $avg = array_sum($list)/count($list);//平均值
