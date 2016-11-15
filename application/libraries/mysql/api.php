@@ -101,7 +101,7 @@ class API{
         $data['mid'] = $this->museum_id;
         $data['scatter_temperature'] = $this->count_scatter($env_id,'temperature');
         $data['scatter_humidity'] = $this->count_scatter($env_id,'humidity');
-
+        //各种环境参数达标和未达标总和
         $ta_datas = $this->count_total_abnormal($env_id);
         foreach($ta_datas as $param => $v){
             $data[$param."_total"] = $v['total'];
@@ -129,7 +129,7 @@ class API{
 
         return round($sd/$avg,3);//离散系数
     }
-    //博物馆综合统计-各参数达标总和未达标总和
+    //博物馆综合统计-各环境参数达标总和未达标总和
     public function count_total_abnormal($env_id){
         $env_param = array("temperature","humidity","light","uv","voc");
         $alldatas =  $this->db['env']
