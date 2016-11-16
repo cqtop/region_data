@@ -162,8 +162,11 @@ class API{
             $normal = $abnormal = array();
             foreach($alldatas as $data){
                 if($data[$param]){
-                    if(strpos($data['alert_param'], $param) !== false) $abnormal[] = $data[$param];//存在告警参数
-                    else $normal[] = $data[$param];
+                    if(strpos($data['alert_param'], $param) !== false){ //告警字段中存在告警参数
+                        $abnormal[] = $data[$param];
+                    } else {
+                        $normal[] = $data[$param];
+                    }
                 }
             }
             $ret[$param]["total"] = count($normal)+count($abnormal);
