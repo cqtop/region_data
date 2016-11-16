@@ -63,7 +63,7 @@ class Home extends CI_Controller {
 		try{
 			foreach(array("yesterday","week","month") as $date){
 				foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
-					$result = $this->api->count_data_complex($date,$k); var_dump($result);
+					$result = $this->api->count_data_complex($date,$k);
 					if(!$result) continue;
 					if($date == "yesterday"){
 						$this->db->insert('data_complex',$result);//昨天数据直接插入
