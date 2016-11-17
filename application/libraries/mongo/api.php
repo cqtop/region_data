@@ -237,7 +237,7 @@ class API{
 
     public function data_envtype_param(){
         $rs = array();
-        $end_time = strtotime("2016-01-05");//time();
+        $end_time = strtotime("2016-01-04");//time();
         $this->day = date("Y年m月d日",$end_time);
         $start_time = $end_time - 24 * 60 * 60;
         $data_day = $this->data_envtype($start_time, $end_time,"D".date("Ymd",$end_time));//天
@@ -453,7 +453,6 @@ class API{
         $max_range = max($range);
         $min_range_normal = min($range_normal);
         $max_range_normal = max($range_normal);
-        $data["wave"] = $min_range.",".$max_range.",".$min_range_normal.",".$max_range_normal;
         $num = $num_normal = 0;
         if($p == "temperature"){
             if($min_range>=4){
@@ -538,7 +537,10 @@ class API{
                 }
             }
         }
-        $data["wave_status"] = $num?$num:($num_normal?$num_normal:0);
+        if($p == "temperature" || $p == "humidity"){
+            $data["wave"] = $min_range.",".$max_range.",".$min_range_normal.",".$max_range_normal;
+            $data["wave_status"] = $num?$num:($num_normal?$num_normal:0);
+        }
         $data["count_abnormal"] = $abnormal;
         $data["compliance"] = round((sizeof($arr) - $alerts_no)/sizeof($arr),2);
         return $data;

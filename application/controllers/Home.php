@@ -57,11 +57,12 @@ class Home extends CI_Controller {
 					->row_array();
 				if($exist){
 					$depid = $exist["id"];
+					$this->db->where("id",$depid)->update("data_envtype_param",$data);
 				}else{
 					$this->db->insert("data_envtype_param",$data);
 					$depid = $this->db->insert_id();
 				}
-
+				echo $depid;
 				if(!empty($abnormal)){
 					foreach ($abnormal as $k=>$v){
 						$abnormal[$k]["depid"] = $depid;

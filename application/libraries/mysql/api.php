@@ -375,6 +375,7 @@ class API{
 
             if (array_key_exists("alert_param",$value) && $value["alert_param"]){
                 $alerts_arr = explode(",",$value["alert_param"]);
+                $alerts_arr = array_unique($alerts_arr);
                 foreach ($alerts_arr as $v){
                     if(array_key_exists($v,$alerts)){
                         $alerts[$v] ++;
@@ -459,7 +460,6 @@ class API{
         $max_range = max($range);
         $min_range_normal = min($range_normal);
         $max_range_normal = max($range_normal);
-        $data["wave"] = $min_range.",".$max_range.",".$min_range_normal.",".$max_range_normal;
         $num = $num_normal = 0;
         if($p == "temperature"){
             if($min_range>=4){
@@ -544,7 +544,10 @@ class API{
                 }
             }
         }
-        $data["wave_status"] = $num?$num:($num_normal?$num_normal:0);
+        if($p == "temperature" || $p == "humidity"){
+            $data["wave"] = $min_range.",".$max_range.",".$min_range_normal.",".$max_range_normal;
+            $data["wave_status"] = $num?$num:($num_normal?$num_normal:0);
+        }
         $data["count_abnormal"] = $abnormal;
         $data["compliance"] = round((sizeof($arr) - $alerts_no)/sizeof($arr),2);
         return $data;
