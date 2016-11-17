@@ -161,6 +161,7 @@ class Home extends CI_Controller {
 					if($museum['db_user'] && $museum['db_pass']){
 						$options['username'] = $museum['db_user'];
 						$options['password'] = $museum['db_pass'];
+						$options['db'] = $museum['db_name'];
 					}
 					$mongo = new MongoClient($server, $options);
 					if($mongo){
