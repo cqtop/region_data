@@ -537,7 +537,7 @@ class API{
                 }
             }
         }
-        if($p == "temperature" || $p == "humidity"){
+        if(($p == "temperature" || $p == "humidity") && $this->day){
             $data["wave"] = $min_range.",".$max_range.",".$min_range_normal.",".$max_range_normal;
             $data["wave_status"] = $num?$num:($num_normal?$num_normal:0);
         }
