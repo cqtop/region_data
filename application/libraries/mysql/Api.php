@@ -5,6 +5,8 @@ class API{
 
     public $btime = null;//查询开始时间
     public $etime = null;//查询结束时间
+    public $date_start = null;// 周/月查询开始日期
+    public $date_end = null;// 周/月查询结束日期
     public $EnvNo = array();//环境编号(展厅/展柜/库房)
 
     private $texture_no = array();
@@ -127,6 +129,14 @@ class API{
             $this->EnvNo[$k] = array_column($envno_arr,"env_no");
         }
     }
+    //生成周/月日期列表
+    protected function _date_list($s,$e){
+        $date = array();
+        for ($i = strtotime($s); $i <= strtotime($e); $i += 86400) {
+            $date[] = "D". date("Ymd", $i);
+        }
+        return $date;
+    }
 
 
     //博物馆基础数据-馆藏文物数量
@@ -148,20 +158,21 @@ class API{
     //博物馆综合统计
     public function count_data_complex($date,$env_id){
         //判断日期 转换对应时间戳
+        $this->etime = strtotime('-1 day 23:59:59');
+        $this->date_end = date("Ymd",strtotime('-1 day'));
         switch ($date){
             case "yesterday": //昨天
                 $this->btime = strtotime('-1 day 00:00:00');
-                $this->etime = strtotime('-1 day 23:59:59');
                 $date_str = "D".date("Ymd",$this->btime);
                 break;
             case "week": //本周
                 $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
-                $this->etime = strtotime('-1 day 23:59:59');
+                $this->date_start = date("Ymd",mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y')));
                 $date_str = "W".date("YW");
                 break;
             case "month": //本月
                 $this->btime = mktime(0,0,0,date('m'),1,date('y'));
-                $this->etime = strtotime('-1 day 23:59:59');
+                $this->date_start = date("Ymd",mktime(0,0,0,date('m'),1,date('y')));
                 $date_str = "M".date("Ym");
                 break;
         }
@@ -176,10 +187,17 @@ class API{
         $data['scatter_temperature'] = $this->count_scatter($env_id,'temperature');
         $data['scatter_humidity'] = $this->count_scatter($env_id,'humidity');
         //各种环境参数达标和未达标总和
-        $ta_datas = $this->count_total_abnormal($env_id);
-        foreach($ta_datas as $param => $v){
-            $data[$param."_total"] = $v['total'];
-            $data[$param."_abnormal"] = $v['abnormal'];
+        if($date == "yesterday") { //天数据
+            $ta_datas = $this->count_total_abnormal($env_id);
+            if($ta_datas){
+                foreach($ta_datas as $param => $v){
+                    $data[$param."_total"] = $v['total'];
+                    $data[$param."_abnormal"] = $v['abnormal'];
+                }
+            }
+        } else { // 周/月数据统计
+            $ta_datas = $this->count_total_abnormal_2($env_id);
+            $data = array_merge($data,$ta_datas);
         }
 
         return $data;
@@ -204,7 +222,7 @@ class API{
 
         return round($sd/$avg,3);//离散系数
     }
-    //博物馆综合统计-各环境参数达标总和未达标总和
+    //博物馆综合统计-各环境参数达标总和未达标总和-天数据
     public function count_total_abnormal($env_id){
         $env_param = array("temperature","humidity","light","uv","voc");
         $alldatas =  $this->db['env']
@@ -213,7 +231,7 @@ class API{
             ->where("equip_time<",$this->etime)
             ->where_in("env_no",$this->EnvNo[$env_id])
             ->get("data_sensor")->result_array();
-        //var_dump($alldatas);
+        if(!$alldatas) return false;
         foreach($env_param as $param){
             $normal = $abnormal = array();
             foreach($alldatas as $data){
@@ -231,6 +249,28 @@ class API{
 
         return $ret;
     }
+    //博物馆综合统计2-各环境参数达标总和未达标总和-周/月数据(累加天数据)
+    public function count_total_abnormal_2($env_id){
+        $env_param = array("temperature","humidity","light","uv","voc");
+        $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
+
+        $sumstr = '';
+        foreach($env_param as $v){
+            $sumstr .= ",SUM({$v}_total) as {$v}_total,SUM({$v}_abnormal) as {$v}_abnormal";
+        }
+        $sumstr = substr($sumstr,1);
+        $alldatas = $this->CI->db
+            ->select($sumstr)
+            ->where("env_type",$env_type[$env_id])
+            ->where("mid",$this->museum_id)
+            ->where_in("date",$this->_date_list($this->date_start,$this->date_end))
+            ->group_by("mid")
+            ->get("data_complex")
+            ->result_array();
+
+        return $alldatas[0];
+    }
+
 
     public function data_envtype_param(){
         $rs = array();
