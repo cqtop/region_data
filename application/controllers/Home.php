@@ -12,6 +12,7 @@ class Home extends CI_Controller {
 	* @param $no 序号（第几个博物馆）
 	*/
 	public function index($no=0){
+		lineMsg('+++ start memory:'.number_format(memory_get_usage()));
 		$this->museum = $this->db->limit(1, $no)->get("museum")->row_array();
 		if(empty($this->museum)){
 			lineMsg('未查询到博物馆！', true);
@@ -24,10 +25,10 @@ class Home extends CI_Controller {
 		try{
 			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb,'mid'=>$this->museum['id']));
 
-//			$this->count_base();
-//			lineMsg('博物馆基础数据统计完成');
-//			$this->count_complex();
-//			lineMsg('博物馆综合统计完成');
+			$this->count_base();
+			lineMsg('博物馆基础数据统计完成');
+			$this->count_complex();
+			lineMsg('博物馆综合统计完成');
 
 			$this->data_envtype_param();
 			lineMsg('环境类型参数综合统计完成');
@@ -38,6 +39,8 @@ class Home extends CI_Controller {
 			lineMsg($e->getMessage());
 		}
 		lineMsg('统计结束');
+		lineMsg('+++ end memory:'.number_format(memory_get_usage()));
+		lineMsg('+++ memory peak:'.number_format(memory_get_peak_usage()));
 	}
 
 	public function data_envtype_param(){ //环境类型参数综合统计

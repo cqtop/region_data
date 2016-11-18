@@ -17,3 +17,4 @@ Desktop.ini
 
 #nodejs:
 node_modules
+application/config/database.php
