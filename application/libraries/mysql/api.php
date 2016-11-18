@@ -413,12 +413,12 @@ class API{
         );
         $data["abnormal"] = array();//异常数据
         $data["wave_arr"] = array();//日波动超标数据
-        $average = round(array_sum($arr)/sizeof($arr),2);
+        $average = sizeof($arr)?round(array_sum($arr)/sizeof($arr),2):0;
         $sum = 0;
         foreach ($arr as $k =>$v){
             $sum += pow($v - $average,2);
         }
-        $standard = sqrt($sum/sizeof($arr));//标准差
+        $standard = sizeof($arr)?sqrt($sum/sizeof($arr)):0;//标准差
         asort($arr);
         if(sizeof($arr)%2 == 0){ //中位值
             $end = intval(sizeof($arr)/2);
@@ -549,7 +549,7 @@ class API{
             $data["wave_status"] = $num?$num:($num_normal?$num_normal:0);
         }
         $data["count_abnormal"] = $abnormal;
-        $data["compliance"] = round((sizeof($arr) - $alerts_no)/sizeof($arr),2);
+        $data["compliance"] = sizeof($arr)?round((sizeof($arr) - $alerts_no)/sizeof($arr),2):0;
         return $data;
     }
 
