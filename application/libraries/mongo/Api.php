@@ -204,7 +204,7 @@ class API{
             }
         } else { // 周/月数据统计
             $ta_datas = $this->count_total_abnormal_2($env_id);
-            $data = array_merge($data,$ta_datas);
+            if($ta_datas) $data = array_merge($data,$ta_datas);
         }
 
         return $data;
@@ -272,6 +272,7 @@ class API{
 
     //博物馆综合统计2-各环境参数达标总和未达标总和-周/月数据(累加天数据)
     public function count_total_abnormal_2($env_id){
+        if($this->date_end < $this->date_start) return false;// 跨周/月
         $env_param = array("temperature","humidity","light","uv","voc");
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
 
