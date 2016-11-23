@@ -23,7 +23,7 @@ class Home extends CI_Controller {
 		// 事务
 		$this->db->trans_begin();
 		try{
-			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb,'mid'=>$this->museum['id']));
+			$this->load->library($this->museum['db_type']."_api", array('db'=>$this->subdb,'mid'=>$this->museum['id']),"api");
 
 			$this->count_base();
 			lineMsg('博物馆基础数据统计完成');

@@ -1,31 +1,14 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
-class API{
-
-    public $btime = null;//查询开始时间
-    public $etime = null;//查询结束时间
-    public $date_start = null;// 周/月查询开始日期
-    public $date_end = null;// 周/月查询结束日期
-    public $EnvNo = array();//环境编号(展厅/展柜/库房)
-
-    private $texture_no = array();
-    private $hall = array();
-    private $showcase = array();
-    private $storeroom = array();
-    private $env_names = array();
-    private $day = false;
-
+require_once("MY_library.php");
+class Mysql_api extends MY_library{
+    private $db = null;
     public function __construct($param)
     {
+        parent::__construct();
         $this->db = $param['db'];
-        $this->CI = & get_instance();
-        $this->CI->load->config("texture");
-        $this->texture = config_item("texture");
-        $this->areas = array();
         $this->museum_id = $param["mid"];
         $this->getArea();
-
         $this->getEnvNo();
 
     }
@@ -138,7 +121,6 @@ class API{
         return $date;
     }
 
-
     //博物馆基础数据-馆藏文物数量
     public function count_relic(){
         return $this->db['relic']->count_all_results('relic');
@@ -187,8 +169,8 @@ class API{
                 }
                 break;
         }
-        $this->date_start = date("Ymd H:i:s",$this->btime);
-        $this->date_end = date("Ymd H:i:s",$this->etime);
+        $this->date_start = date("Ymd",$this->btime);
+        $this->date_end = date("Ymd",$this->etime);
 
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
         $data = array();
@@ -373,7 +355,7 @@ class API{
     }
 
     private function deal_param($arr,$data,$ty,$date){
-        $temperature = $uv = $voc = $humidity = $light = array();
+        //$temperature = $uv = $voc = $humidity = $light = array();
         $alerts = array(
             "temperature"=>0,
             "uv"=>0,
@@ -397,27 +379,27 @@ class API{
                 foreach ($p as $k1=>$p1){
 
                     if($k1 == "temperature" && array_key_exists("temperature",$value) && $value[$k1]){
-                        $temperature[] = $value[$k1];
+                        //$temperature[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $temperature_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
                     }elseif ($k1 == "uv" && array_key_exists("uv",$value) && $value[$k1]){
-                        $uv[] = $value[$k1];
+                        //$uv[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $uv_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
                     }elseif ($k1 == "voc" && array_key_exists("voc",$value) && $value[$k1]){
-                        $voc[] = $value[$k1];
+                        //$voc[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $voc_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
                     }elseif ($k1 == "humidity" && array_key_exists("humidity",$value) && $value[$k1]){
-                        $humidity[] = $value[$k1];
+                        //$humidity[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $humidity_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
                     }elseif ($k1 == "light" && array_key_exists("light",$value) && $value[$k1]){
-                        $light[] = $value[$k1];
+                        //$light[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $light_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
@@ -439,172 +421,20 @@ class API{
 
         foreach ($arr as $k=>$p){
             foreach ($p as $k1=>$p1){
-                if($k1 == "temperature" && !empty($temperature)){
-                    $rs[] = $this->calculate($temperature,$k,$ty,$date,$temperature_areano,$alerts[$k1],$k1);
-                }elseif ($k1 == "uv" && !empty($uv)){
-                    $rs[] = $this->calculate($uv,$k,$ty,$date,$uv_areano,$alerts[$k1],$k1);
-                }elseif ($k1 == "voc" && !empty($voc)){
-                    $rs[] = $this->calculate($voc,$k,$ty,$date,$voc_areano,$alerts[$k1],$k1);
-                }elseif ($k1 == "humidity" && !empty($humidity)){
-                    $rs[] = $this->calculate($humidity,$k,$ty,$date,$humidity_areano,$alerts[$k1],$k1);
-                }elseif ($k1 == "light" && !empty($light)){
-                    $rs[] = $this->calculate($light,$k,$ty,$date,$light_areano,$alerts[$k1],$k1);
+                if($k1 == "temperature" && !empty($temperature_areano)){
+                    $rs[] = $this->calculate($k,$ty,$date,$temperature_areano,$alerts[$k1],$k1);
+                }elseif ($k1 == "uv" && !empty($uv_areano)){
+                    $rs[] = $this->calculate($k,$ty,$date,$uv_areano,$alerts[$k1],$k1);
+                }elseif ($k1 == "voc" && !empty($voc_areano)){
+                    $rs[] = $this->calculate($k,$ty,$date,$voc_areano,$alerts[$k1],$k1);
+                }elseif ($k1 == "humidity" && !empty($humidity_areano)){
+                    $rs[] = $this->calculate($k,$ty,$date,$humidity_areano,$alerts[$k1],$k1);
+                }elseif ($k1 == "light" && !empty($light_areano)){
+                    $rs[] = $this->calculate($k,$ty,$date,$light_areano,$alerts[$k1],$k1);
                 }
             }
         }
         return $rs;
     }
-
-    private function calculate($arr,$param,$ty,$date,$arr_areano,$alerts_no,$p){
-        $data = array(
-            "env_type"=>$ty,
-            "param"=>$param,
-            "mid"=>$this->museum_id,
-            "date"=>$date,
-            "max"=>max($arr),
-            "min"=>min($arr)
-        );
-        $data["abnormal"] = array();//异常数据
-        $data["wave_arr"] = array();//日波动超标数据
-        $average = sizeof($arr)?round(array_sum($arr)/sizeof($arr),2):0;
-        $sum = 0;
-        foreach ($arr as $k =>$v){
-            $sum += pow($v - $average,2);
-        }
-        $standard = sizeof($arr)?sqrt($sum/sizeof($arr)):0;//标准差
-        asort($arr);
-        if(sizeof($arr)%2 == 0){ //中位值
-            $end = intval(sizeof($arr)/2);
-            $flag = $arr[$end-1] + $arr[$end];
-            $data["middle"] = round($flag/2,2);
-        }else{
-            $data["middle"] = $arr[intval((sizeof($arr)+1)/2)-1];
-        }
-        $data["average"] = $average;
-        $data["standard"] = round($standard,2);
-        $abnormal = 0;
-        $range = $range_normal = array();
-        $range_areano = $range_normal_areano = array();
-        $area_no_normal = array();
-        foreach ($arr_areano as $area_no => $value){
-            $datas = array();
-            foreach ($value as $v){
-                $datas[] = $v["data"];
-                $z = $data["standard"]?($v["data"] - $data["average"]) / $data["standard"]:0;
-                if(abs($z) > 3){
-                    $abnormal++; //异常值个数
-                    $data["abnormal"][] = array(
-                        "date"=>date("Y年n月j日",$v["time"]),
-                        "mid"=>$this->museum_id,
-                        "equip_no"=>$v["equip_id"],
-                        "val"=>$v["data"],
-                        "time"=>date("H:i:s",$v["time"]),
-                    );
-                }else{
-                    $area_no_normal[$area_no][] = $v["data"];
-                }
-            }
-            $range[] = $range_areano[$area_no][] = max($datas) - min($datas);
-        }
-        foreach ($area_no_normal as $area_no => $value){
-            $range_normal[] = $range_normal_areano[$area_no][] = max($value) - min($value);
-        }
-        $min_range = min($range);
-        $max_range = max($range);
-        $min_range_normal = min($range_normal);
-        $max_range_normal = max($range_normal);
-        $num = $num_normal = 0;
-        if($p == "temperature"){
-            if($min_range>=4){
-                $num += pow(2,3);
-            }
-            if($max_range>=4){
-                $num += pow(2,2);
-            }
-            if($min_range_normal>=4){
-                $num += pow(2,1);
-            }
-            if($max_range_normal>=4){
-                $num += pow(2,0);
-            }
-            if($this->day){
-                foreach ($range_areano as $areano =>$value){
-                    foreach ($value as $v){
-                        if($v>=4){
-                            $data["wave_arr"][] = array(
-                                "date"=>$this->day,
-                                "mid"=>$this->museum_id,
-                                "type"=>0,
-                                "val"=>$v,
-                                "env_name"=>$this->env_names[$areano]
-                            );
-                        }
-                    }
-                }
-                foreach ($range_normal_areano as $areano =>$value){
-                    foreach ($value as $v){
-                        if($v>=4){
-                            $data["wave_arr"][] = array(
-                                "date"=>$this->day,
-                                "mid"=>$this->museum_id,
-                                "type"=>1,
-                                "val"=>$v,
-                                "env_name"=>$this->env_names[$areano]
-                            );
-                        }
-                    }
-                }
-            }
-        }elseif ($p == "humidity"){
-            if($min_range>=5){
-                $num_normal += pow(2,3);
-            }
-            if($max_range>=5){
-                $num_normal += pow(2,2);
-            }
-            if($min_range_normal>=5){
-                $num_normal += pow(2,1);
-            }
-            if($max_range_normal>=5){
-                $num_normal += pow(2,0);
-            }
-            if($this->day) {
-                foreach ($range_areano as $areano => $value) {
-                    foreach ($value as $v) {
-                        if ($v >= 5) {
-                            $data["wave_arr"][] = array(
-                                "date" =>$this->day,
-                                "mid" => $this->museum_id,
-                                "type" => 0,
-                                "val" => $v,
-                                "env_name" => $this->env_names[$areano]
-                            );
-                        }
-                    }
-                }
-                foreach ($range_normal_areano as $areano => $value) {
-                    foreach ($value as $v) {
-                        if ($v >= 5) {
-                            $data["wave_arr"][] = array(
-                                "date" =>$this->day,
-                                "mid" => $this->museum_id,
-                                "type" => 1,
-                                "val" => $v,
-                                "env_name" => $this->env_names[$areano]
-                            );
-                        }
-                    }
-                }
-            }
-        }
-        if(($p == "temperature" || $p == "humidity") && $this->day){
-            $data["wave"] = $min_range.",".$max_range.",".$min_range_normal.",".$max_range_normal;
-            $data["wave_status"] = $num?$num:($num_normal?$num_normal:0);
-        }
-        $data["count_abnormal"] = $abnormal;
-        $data["compliance"] = sizeof($arr)?round((sizeof($arr) - $alerts_no)/sizeof($arr),2):0;
-        return $data;
-    }
-
 
 }
