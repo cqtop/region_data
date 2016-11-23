@@ -164,24 +164,37 @@ class API{
     //博物馆综合统计
     public function count_data_complex($date,$env_id){
         //判断日期 转换对应时间戳
-        $this->etime = strtotime('-1 day 23:59:59');
-        $this->date_end = date("Ymd",strtotime('-1 day'));
         switch ($date){
             case "yesterday": //昨天
                 $this->btime = strtotime('-1 day 00:00:00');
+                $this->etime = strtotime('-1 day 23:59:59');
                 $date_str = "D".date("Ymd",$this->btime);
                 break;
             case "week": //本周
-                $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
-                $this->date_start = date("Ymd",mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y')));
-                $date_str = "W".date("YW");
+                if(date("w") == 1){ //处理上周数据
+                    $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')-6,date('y'));
+                    $this->etime = mktime(23,59,59,date('m'),date('d')-date('w'),date('y'));
+                    $date_str = "W".date("YW",$this->etime);
+                }else{//本周
+                    $this->btime = mktime(0,0,0,date("m"),date("d")-(date("w")==0?7:date("w"))+1,date("Y"));
+                    $this->etime = strtotime('-1 day 23:59:59');
+                    $date_str = "W".date("YW",$this->etime);
+                }
                 break;
             case "month": //本月
-                $this->btime = mktime(0,0,0,date('m'),1,date('y'));
-                $this->date_start = date("Ymd",mktime(0,0,0,date('m'),1,date('y')));
-                $date_str = "M".date("Ym");
+                if(date("d") == "01"){ //处理上月数据
+                    $this->btime = mktime(0,0,0,date('m')-1,1,date('y'));
+                    $this->etime = mktime(23,59,59,date("m"),0,date("y"));
+                    $date_str = "M".date("Ym",$this->etime);
+                }else{//本月
+                    $this->btime = mktime(0,0,0,date('m'),1,date('y'));
+                    $this->etime = strtotime('-1 day 23:59:59');
+                    $date_str = "M".date("Ym");
+                }
                 break;
         }
+        $this->date_start = date("Ymd",$this->btime);
+        $this->date_end = date("Ymd",$this->etime);
 
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
         $data = array();
@@ -272,7 +285,6 @@ class API{
 
     //博物馆综合统计2-各环境参数达标总和未达标总和-周/月数据(累加天数据)
     public function count_total_abnormal_2($env_id){
-        if($this->date_end < $this->date_start) return false;// 跨周/月
         $env_param = array("temperature","humidity","light","uv","voc");
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
 
@@ -289,7 +301,7 @@ class API{
             ->group_by("mid")
             ->get("data_complex")
             ->result_array();
-
+        if(!$alldatas) return array();
         return $alldatas[0];
     }
 

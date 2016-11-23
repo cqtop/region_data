@@ -109,29 +109,22 @@ class Home extends CI_Controller {
 				foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
 					$result = $this->api->count_data_complex($date,$k);
 					if(!$result) continue;
-					if($date == "yesterday"){
-						$this->db->insert('data_complex',$result);//昨天数据直接插入
-					}else{ //周数据 月数据需判断之前是否存在
-						$old_datas = $this->db
-								->where("date",$result['date'])
-								->where("env_type",$v)
-								->where("mid",$this->museum['id'])
-								->get("data_complex")
-								->result_array();
-
-						if($old_datas) {
-							$this->db
-								->where('date',$result['date'])
+					$old_datas = $this->db
+							->where("date",$result['date'])
+							->where("env_type",$v)
+							->where("mid",$this->museum['id'])
+							->get("data_complex")
+							->result_array();
+					if($old_datas) {
+						$this->db->where('date',$result['date'])
 								->where("env_type",$v)
 								->where("mid",$this->museum['id'])
 								->update('data_complex', $result);
-						} else {
-							$this->db->insert("data_complex",$result);
-						}
+					}else{
+						$this->db->insert("data_complex",$result);
 					}
 				}
 			}
-
 		}catch(Exception $e){
 			throw new Exception("博物馆综合统计失败！");
 		}
@@ -144,7 +137,7 @@ class Home extends CI_Controller {
 		$museum = $this->museum;
 		try{
 			switch ($museum['db_type']) {
-				case 'mysql':
+				case 'Mysql':
 					$this->subdb = array();
 					$config = array();
 					// mysql要求各子库ip、用户名、密码必须相同。
@@ -158,7 +151,7 @@ class Home extends CI_Controller {
 						$this->subdb[$sub] = $this->load->database($config, TRUE);
 					}
 					break;
-				case 'mongo':
+				case 'Mongo':
 					$server = 'mongodb://'.$museum['db_host'];
 					$options = array();
 					if($museum['db_user'] && $museum['db_pass']){
