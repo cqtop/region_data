@@ -23,7 +23,7 @@ class Home extends CI_Controller {
 		// 事务
 		$this->db->trans_begin();
 		try{
-			$this->load->library($this->museum['db_type']."/api", array('db'=>$this->subdb,'mid'=>$this->museum['id']));
+			$this->load->library($this->museum['db_type']."_api", array('db'=>$this->subdb,'mid'=>$this->museum['id']),"api");
 
 			$this->count_base();
 			lineMsg('博物馆基础数据统计完成');
@@ -144,7 +144,7 @@ class Home extends CI_Controller {
 		$museum = $this->museum;
 		try{
 			switch ($museum['db_type']) {
-				case 'mysql':
+				case 'Mysql':
 					$this->subdb = array();
 					$config = array();
 					// mysql要求各子库ip、用户名、密码必须相同。
@@ -158,7 +158,7 @@ class Home extends CI_Controller {
 						$this->subdb[$sub] = $this->load->database($config, TRUE);
 					}
 					break;
-				case 'mongo':
+				case 'Mongo':
 					$server = 'mongodb://'.$museum['db_host'];
 					$options = array();
 					if($museum['db_user'] && $museum['db_pass']){
