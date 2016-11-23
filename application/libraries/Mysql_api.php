@@ -69,36 +69,7 @@ class Mysql_api extends MY_library{
         $this->areas = $areas;
     }
 
-    //统计函数-计算标准差
-    public function getStandardDeviation($avg, $list)
-    {
-        $total_var = 0;
-        foreach ($list as $lv){
-            $total_var += pow( ($lv - $avg), 2 );
-        }
-        return sqrt( $total_var / (count($list) ) );
-    }
-    //统计函数-计算中位值
-    public function getMiddleValue($list){
-        sort($list);//升序排序
-        $num = count($list);
-        if($num%2 == 0){
-            $middleValue = ($list[$num/2]+$list[($num/2)-1])/2;
-        }else{
-            $middleValue = $list[floor($num/2)];
-        }
-        return $middleValue;
-    }
-    //统计函数-计算异常值
-    public function getAbnormalValue($list){
-        $avg = array_sum($list)/count($list);
-        $sd = $this->getStandardDeviation($avg,$list);
-        foreach($list as $v){
-            $Z = abs(($v-$avg)/$sd);
-            if($Z>3) return true;
-        }
-        return false;
-    }
+
     //统计函数-获取博物馆展厅/展柜/库房的环境编号
     public function getEnvNo(){
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
@@ -112,14 +83,7 @@ class Mysql_api extends MY_library{
             $this->EnvNo[$k] = array_column($envno_arr,"env_no");
         }
     }
-    //生成周/月日期列表
-    protected function _date_list($s,$e){
-        $date = array();
-        for ($i = strtotime($s); $i <= strtotime($e); $i += 86400) {
-            $date[] = "D". date("Ymd", $i);
-        }
-        return $date;
-    }
+
 
     //博物馆基础数据-馆藏文物数量
     public function count_relic(){
