@@ -8,9 +8,11 @@ class Mysql_api extends MY_library{
         parent::__construct();
         $this->db = $param['db'];
         $this->museum_id = $param["mid"];
+        if($param["date"]){
+            $this->date = $param["date"];
+        }
         $this->getArea();
         $this->getEnvNo();
-
     }
 
     private function getArea(){
@@ -201,10 +203,10 @@ class Mysql_api extends MY_library{
 
     public function data_envtype_param(){
         $rs = array();
-        $end_time = time();
-        $this->day = date("Y年m月d日",$end_time);
-        $start_time = $end_time - 24 * 60 * 60;
-        $data_day = $this->data_envtype($start_time, $end_time,"D".date("Ymd",$end_time));//天
+        $start_time = $this->date?strtotime($this->date):strtotime("-1 day");
+        $end_time = $start_time + 24*60*60;
+        $this->day = date("Y年m月d日",$start_time);
+        $data_day = $this->data_envtype($start_time, $end_time,"D".date("Ymd",$start_time));//天
         $rs = array_merge($rs,$data_day);
 
         $this->day = false;

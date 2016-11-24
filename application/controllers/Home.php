@@ -4,8 +4,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Home extends CI_Controller {
 	var $subdb = null;
 	var $museum = null;
+	var $date = null; //获取某天的数据
 	public function __construct(){
 		parent::__construct();
+		//$this->date = "2016-11-15";
 	}
 
 	/**
@@ -23,7 +25,7 @@ class Home extends CI_Controller {
 		// 事务
 		$this->db->trans_begin();
 		try{
-			$this->load->library($this->museum['db_type']."_api", array('db'=>$this->subdb,'mid'=>$this->museum['id']),"api");
+			$this->load->library($this->museum['db_type']."_api", array('db'=>$this->subdb,'mid'=>$this->museum['id'],'date'=>$this->date),"api");
 
 			$this->count_base();
 			lineMsg('博物馆基础数据统计完成');
