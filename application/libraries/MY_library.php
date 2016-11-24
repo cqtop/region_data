@@ -21,6 +21,7 @@ class MY_library{
     protected $areas = null;
     protected $museum_id = null;
     protected $day = false;
+    protected $date = false;
     
     function __construct()
     {

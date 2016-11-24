@@ -9,6 +9,9 @@ class Mongo_api extends MY_library{
         require_once("Mongo_db.php");
         $this->mongo_db = new Mongo_db($param['db']);
         $this->museum_id = $param["mid"];
+        if($param["date"]){
+            $this->date = $param["date"];
+        }
         $this->getArea();
         $this->getEnvNo();
     }
@@ -253,10 +256,11 @@ class Mongo_api extends MY_library{
 
     public function data_envtype_param(){
         $rs = array();
-        $end_time = strtotime("2016-01-03");//time();
-        $this->day = date("Y年m月d日",$end_time);
-        $start_time = $end_time - 24 * 60 * 60;
-        $data_day = $this->data_envtype($start_time, $end_time,"D".date("Ymd",$end_time));//天
+        //$start_time = $this->date?strtotime($this->date):strtotime("-1 day");
+        $start_time = $this->date?strtotime($this->date):strtotime("2016-01-03");
+        $end_time = $start_time + 24*60*60;
+        $this->day = date("Y年m月d日",$start_time);
+        $data_day = $this->data_envtype($start_time, $end_time,"D".date("Ymd",$start_time));//天
         $rs = array_merge($rs,$data_day);
         $this->day = false;
         $day_num = date("w");
