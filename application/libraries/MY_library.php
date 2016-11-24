@@ -10,6 +10,7 @@ class MY_library{
     protected $etime = null;//查询结束时间
     protected $date_start = null;//周月查询开始日期
     protected $date_end = null;//周月查询结束日期
+    protected $date_str = null;
     protected $EnvNo = array();//环境编号(展厅/展柜/库房)
     protected $CI = null;
     protected $texture_no = array();
@@ -229,6 +230,41 @@ class MY_library{
             $date[] = "D". date("Ymd", $i);
         }
         return $date;
+    }
+    //日期转换
+    protected function date_conversion($date){
+        switch ($date){
+            case "yesterday": //昨天
+                $this->btime = strtotime('-1 day 00:00:00');
+                $this->etime = strtotime('-1 day 23:59:59');
+                $this->date_str = "D".date("Ymd",$this->btime);
+                break;
+            case "week": //本周
+                if(date("w") == 1){ //处理上周数据
+                    $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')-6,date('y'));
+                    $this->etime = mktime(23,59,59,date('m'),date('d')-date('w'),date('y'));
+                    $this->date_str = "W".date("YW",$this->etime);
+                }else{//本周
+                    $this->btime = mktime(0,0,0,date("m"),date("d")-(date("w")==0?7:date("w"))+1,date("Y"));
+                    $this->etime = strtotime('-1 day 23:59:59');
+                    $this->date_str = "W".date("YW",$this->etime);
+                }
+                break;
+            case "month": //本月
+                if(date("d") == "01"){ //处理上月数据
+                    $this->btime = mktime(0,0,0,date('m')-1,1,date('y'));
+                    $this->etime = mktime(23,59,59,date("m"),0,date("y"));
+                    $this->date_str = "M".date("Ym",$this->etime);
+                }else{//本月
+                    $this->btime = mktime(0,0,0,date('m'),1,date('y'));
+                    $this->etime = strtotime('-1 day 23:59:59');
+                    $this->date_str = "M".date("Ym");
+                }
+                break;
+        }
+        $this->date_start = date("Ymd",$this->btime);
+        $this->date_end = date("Ymd",$this->etime);
+
     }
     
 }

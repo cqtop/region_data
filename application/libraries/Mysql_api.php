@@ -103,44 +103,12 @@ class Mysql_api extends MY_library{
 
     //博物馆综合统计
     public function count_data_complex($date,$env_id){
-        //判断日期 转换对应时间戳
-        switch ($date){
-            case "yesterday": //昨天
-                $this->btime = strtotime('-1 day 00:00:00');
-                $this->etime = strtotime('-1 day 23:59:59');
-                $date_str = "D".date("Ymd",$this->btime);
-                break;
-            case "week": //本周
-                if(date("w") == 1){ //处理上周数据
-                    $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')-6,date('y'));
-                    $this->etime = mktime(23,59,59,date('m'),date('d')-date('w'),date('y'));
-                    $date_str = "W".date("YW",$this->etime);
-                }else{//本周
-                    $this->btime = mktime(0,0,0,date("m"),date("d")-(date("w")==0?7:date("w"))+1,date("Y"));
-                    $this->etime = strtotime('-1 day 23:59:59');
-                    $date_str = "W".date("YW",$this->etime);
-                }
-                break;
-            case "month": //本月
-                if(date("d") == "01"){ //处理上月数据
-                    $this->btime = mktime(0,0,0,date('m')-1,1,date('y'));
-                    $this->etime = mktime(23,59,59,date("m"),0,date("y"));
-                    $date_str = "M".date("Ym",$this->etime);
-                }else{//本月
-                    $this->btime = mktime(0,0,0,date('m'),1,date('y'));
-                    $this->etime = strtotime('-1 day 23:59:59');
-                    $date_str = "M".date("Ym");
-                }
-                break;
-        }
-        $this->date_start = date("Ymd",$this->btime);
-        $this->date_end = date("Ymd",$this->etime);
-
+        $this->date_conversion($date);
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
         $data = array();
         if(!$this->EnvNo[$env_id]) return false;
 
-        $data['date'] = $date_str;
+        $data['date'] = $this->date_str;
         $data['env_type'] = $env_type[$env_id];
         $data['mid'] = $this->museum_id;
         $data['scatter_temperature'] = $this->count_scatter($env_id,'temperature');
