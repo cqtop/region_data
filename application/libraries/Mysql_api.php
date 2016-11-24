@@ -115,6 +115,9 @@ class Mysql_api extends MY_library{
         $data['mid'] = $this->museum_id;
         $data['scatter_temperature'] = $this->count_scatter($env_id,'temperature');
         $data['scatter_humidity'] = $this->count_scatter($env_id,'humidity');
+        $data['scatter_light'] = $this->count_scatter($env_id,"light");
+        $data['scatter_uv'] = $this->count_scatter($env_id,"uv");
+        $data['scatter_voc'] = $this->count_scatter($env_id,"voc");
         //各种环境参数达标和未达标总和
         if($date == "yesterday") { //天数据
             $ta_datas = $this->count_total_abnormal($env_id);

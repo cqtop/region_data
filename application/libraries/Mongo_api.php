@@ -121,6 +121,9 @@ class Mongo_api extends MY_library{
         $data['mid'] = $this->museum_id;
         $data['scatter_temperature'] = $this->count_scatter($env_id,'temperature');
         $data['scatter_humidity'] = $this->count_scatter($env_id,'humidity');
+        $data['scatter_light'] = $this->count_scatter($env_id,"light");
+        $data['scatter_uv'] = $this->count_scatter($env_id,"uv");
+        $data['scatter_voc'] = $this->count_scatter($env_id,"voc");
 
         //各环境达标和未达标总和
         if($date == "yesterday") { //天数据
@@ -148,8 +151,9 @@ class Mongo_api extends MY_library{
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where_in("areano",$this->EnvNo[$env_id])
             ->get("data.sensor.2016");
-        if(empty($datas))return null;
+        if(empty($datas)) return null;
         $list = array_column(array_column($datas,"param"),$type);//一维数据列表
+        if(empty($list)) return null; //无对应环境参数数据
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
 

@@ -7,7 +7,7 @@ class Home extends CI_Controller {
 	var $date = null; //获取某天的数据
 	public function __construct(){
 		parent::__construct();
-		//$this->date = "2016-11-15";
+		//$this->date = "2016-11-10";
 	}
 
 	/**
@@ -107,51 +107,26 @@ class Home extends CI_Controller {
 	// 博物馆综合统计
 	function count_complex(){
 		try{
-			if(isset($specified_date) && $specified_date){//指定日期查询
-				foreach(array($specified_date,"week_s","month_s") as $date){
-					foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
-						$result = $this->api->count_data_complex($date,$k);
-						if(!$result) continue;
-						$old_datas = $this->db
-								->where("date",$result['date'])
+			foreach(array("yesterday","week","month") as $date){
+				foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
+					$result = $this->api->count_data_complex($date,$k); var_dump($result);
+					if(!$result) continue;
+					$old_datas = $this->db
+							->where("date",$result['date'])
+							->where("env_type",$v)
+							->where("mid",$this->museum['id'])
+							->get("data_complex")
+							->result_array();
+					if($old_datas) {
+						$this->db->where('date',$result['date'])
 								->where("env_type",$v)
 								->where("mid",$this->museum['id'])
-								->get("data_complex")
-								->result_array();
-						if($old_datas) {
-							$this->db->where('date',$result['date'])
-									->where("env_type",$v)
-									->where("mid",$this->museum['id'])
-									->update('data_complex', $result);
-						}else{
-							$this->db->insert("data_complex",$result);
-						}
-					}
-				}
-
-			}else{// 默认查询
-				foreach(array("yesterday","week","month") as $date){
-					foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
-						$result = $this->api->count_data_complex($date,$k);
-						if(!$result) continue;
-						$old_datas = $this->db
-								->where("date",$result['date'])
-								->where("env_type",$v)
-								->where("mid",$this->museum['id'])
-								->get("data_complex")
-								->result_array();
-						if($old_datas) {
-							$this->db->where('date',$result['date'])
-									->where("env_type",$v)
-									->where("mid",$this->museum['id'])
-									->update('data_complex', $result);
-						}else{
-							$this->db->insert("data_complex",$result);
-						}
+								->update('data_complex', $result);
+					}else{
+						$this->db->insert("data_complex",$result);
 					}
 				}
 			}
-
 		}catch(Exception $e){
 			throw new Exception("博物馆综合统计失败！");
 		}
