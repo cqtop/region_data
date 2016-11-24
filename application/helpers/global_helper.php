@@ -25,7 +25,15 @@ if(! function_exists("lineMsg")){
 		}else{
 			echo $msg.'...'.date('H:i:s').'<br>';
 		}
+		
+		// 日志
+		$f = fopen('logs'.date('Ym').'.log', 'a');
+		fwrite($f, $msg.'...'.date('H:i:s').PHP_EOL);
+		fclose($f);
+
 		if($e) exit;
 	}
 }
+
+
 

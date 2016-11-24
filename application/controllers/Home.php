@@ -6,6 +6,7 @@ class Home extends CI_Controller {
 	var $museum = null;
 	public function __construct(){
 		parent::__construct();
+		lineMsg('===================='.date('Y-m-d'));
 	}
 
 	/**
@@ -165,6 +166,7 @@ class Home extends CI_Controller {
 					}
 					break;
 				default:
+					throw new Exception("数据库类型错误");
 					break;
 			}
 		}catch(Exception $e){
@@ -181,7 +183,7 @@ class Home extends CI_Controller {
 		// $options['username'] = '';
 		// $options['password'] = '';
 		$mongo = new MongoClient($server, $options);
-		$data = $mongo->museum_ya->relic->base->find();
-		debug(iterator_to_array($data));
+		$data = $mongo->museum_ya->relic->base->findOne();
+		debug($data);
 	}
 }
