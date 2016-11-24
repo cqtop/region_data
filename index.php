@@ -1,4 +1,8 @@
 <?php
+header("Content-type:text/html;charset=utf-8");
+date_default_timezone_set('Asia/Shanghai');
+// ini_set('memory_limit', '4G');
+set_time_limit(0);
 /**
  * CodeIgniter
  *
