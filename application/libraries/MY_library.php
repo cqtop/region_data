@@ -8,6 +8,8 @@
 class MY_library{
     protected $btime = null;//查询开始时间
     protected $etime = null;//查询结束时间
+    protected $date_start = null;//周月查询开始日期
+    protected $date_end = null;//周月查询结束日期
     protected $EnvNo = array();//环境编号(展厅/展柜/库房)
     protected $CI = null;
     protected $texture_no = array();
@@ -188,6 +190,46 @@ class MY_library{
         $data["count_abnormal"] = $abnormal;
         $data["compliance"] = sizeof($arr)?round((sizeof($arr) - $alerts_no)/sizeof($arr),2):0;
         return $data;
+    }
+
+
+    //统计函数-计算标准差
+    protected function getStandardDeviation($avg, $list)
+    {
+        $total_var = 0;
+        foreach ($list as $lv){
+            $total_var += pow( ($lv - $avg), 2 );
+        }
+        return sqrt( $total_var / (count($list) ) );
+    }
+    //统计函数-计算中位值
+    protected function getMiddleValue($list){
+        sort($list);//升序排序
+        $num = count($list);
+        if($num%2 == 0){
+            $middleValue = ($list[$num/2]+$list[($num/2)-1])/2;
+        }else{
+            $middleValue = $list[floor($num/2)];
+        }
+        return $middleValue;
+    }
+    //统计函数-计算异常值
+    protected function getAbnormalValue($list){
+        $avg = array_sum($list)/count($list);
+        $sd = $this->getStandardDeviation($avg,$list);
+        foreach($list as $v){
+            $Z = abs(($v-$avg)/$sd);
+            if($Z>3) return true;
+        }
+        return false;
+    }
+    //生成周/月日期列表
+    protected function _date_list($s,$e){
+        $date = array();
+        for ($i = strtotime($s); $i <= strtotime($e); $i += 86400) {
+            $date[] = "D". date("Ymd", $i);
+        }
+        return $date;
     }
     
 }

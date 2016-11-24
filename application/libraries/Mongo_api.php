@@ -2,9 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 require_once("MY_library.php");
 class Mongo_api extends MY_library{
-
     private $mongo_db = null;
-
     public function __construct($param)
     {
         parent::__construct();
@@ -15,10 +13,7 @@ class Mongo_api extends MY_library{
             $this->date = $param["date"];
         }
         $this->getArea();
-        $this->btime = strtotime('-1 day 00:00:00');
-        $this->etime = strtotime('-1 day 23:59:59');
         $this->getEnvNo();
-
     }
 
     private function getArea(){
@@ -84,36 +79,7 @@ class Mongo_api extends MY_library{
         $this->areas = $areas;
     }
 
-    //统计函数-计算标准差
-    public function getStandardDeviation($avg, $list)
-    {
-        $total_var = 0;
-        foreach ($list as $lv){
-            $total_var += pow( ($lv - $avg), 2 );
-        }
-        return sqrt( $total_var / (count($list) ) );
-    }
-    //统计函数-计算中位值
-    public function getMiddleValue($list){
-        sort($list);//升序排序
-        $num = count($list);
-        if($num%2 == 0){
-            $middleValue = ($list[$num/2]+$list[($num/2)-1])/2;
-        }else{
-            $middleValue = $list[floor($num/2)];
-        }
-        return $middleValue;
-    }
-    //统计函数-计算异常值
-    public function getAbnormalValue($list){
-        $avg = array_sum($list)/count($list);
-        $sd = $this->getStandardDeviation($avg,$list);
-        foreach($list as $v){
-            $Z = abs(($v-$avg)/$sd);
-            if($Z>3) return true;
-        }
-        return false;
-    }
+
     //统计函数-获取博物馆展厅/展柜/库房的环境编号
     public function getEnvNo(){
         $_ids = array();
@@ -153,16 +119,30 @@ class Mongo_api extends MY_library{
                 $date_str = "D".date("Ymd",$this->btime);
                 break;
             case "week": //本周
-                $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
-                $this->etime = strtotime('-1 day 23:59:59');
-                $date_str = "W".date("YW");
+                if(date("w") == 1){ //处理上周数据
+                    $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')-6,date('y'));
+                    $this->etime = mktime(23,59,59,date('m'),date('d')-date('w'),date('y'));
+                    $date_str = "W".date("YW",$this->etime);
+                }else{//本周
+                    $this->btime = mktime(0,0,0,date("m"),date("d")-(date("w")==0?7:date("w"))+1,date("Y"));
+                    $this->etime = strtotime('-1 day 23:59:59');
+                    $date_str = "W".date("YW",$this->etime);
+                }
                 break;
             case "month": //本月
-                $this->btime = mktime(0,0,0,date('m'),1,date('y'));
-                $this->etime = strtotime('-1 day 23:59:59');
-                $date_str = "M".date("Ym");
+                if(date("d") == "01"){ //处理上月数据
+                    $this->btime = mktime(0,0,0,date('m')-1,1,date('y'));
+                    $this->etime = mktime(23,59,59,date("m"),0,date("y"));
+                    $date_str = "M".date("Ym",$this->etime);
+                }else{//本月
+                    $this->btime = mktime(0,0,0,date('m'),1,date('y'));
+                    $this->etime = strtotime('-1 day 23:59:59');
+                    $date_str = "M".date("Ym");
+                }
                 break;
         }
+        $this->date_start = date("Ymd",$this->btime);
+        $this->date_end = date("Ymd",$this->etime);
 
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
         $data = array();
@@ -174,10 +154,18 @@ class Mongo_api extends MY_library{
         $data['scatter_temperature'] = $this->count_scatter($env_id,'temperature');
         $data['scatter_humidity'] = $this->count_scatter($env_id,'humidity');
 
-        $ta_datas = $this->count_total_abnormal($env_id);
-        foreach($ta_datas as $param => $v){
-            $data[$param."_total"] = $v['total'];
-            $data[$param."_abnormal"] = $v['abnormal'];
+        //各环境达标和未达标总和
+        if($date == "yesterday") { //天数据
+            $ta_datas = $this->count_total_abnormal($env_id);
+            if($ta_datas){
+                foreach($ta_datas as $param => $v){
+                    $data[$param."_total"] = $v['total'];
+                    $data[$param."_abnormal"] = $v['abnormal'];
+                }
+            }
+        } else { // 周/月数据统计
+            $ta_datas = $this->count_total_abnormal_2($env_id);
+            if($ta_datas) $data = array_merge($data,$ta_datas);
         }
 
         return $data;
@@ -192,21 +180,39 @@ class Mongo_api extends MY_library{
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where_in("areano",$this->EnvNo[$env_id])
             ->get("data.sensor.2016");
-        if(empty($datas))return NUll;
+        if(empty($datas))return null;
         $list = array_column(array_column($datas,"param"),$type);//一维数据列表
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
 
         return round($sd/$avg,3);
     }
-    //博物馆综合统计-各参数达标总和未达标总和
+    //博物馆综合统计-各参数达标总和未达标总和-天数据
     public function count_total_abnormal($env_id){
         $env_param = array("temperature","humidity","light","uv","voc");
         $alldatas =  $this->mongo_db
+            ->select(array(),array(
+                "_id",
+                "voltage",
+                "instruct",
+                "version",
+                "sensorno",
+                "sendidtip",
+                "ip",
+                "time",
+                "size",
+                "socketstr",
+                "parsertime",
+                "rssi",
+                "exestarttime",
+                "equip_id",
+                "relicno",
+                "exeendtime",
+                "pid"))
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where_in("areano",$this->EnvNo[$env_id])
             ->get("data.sensor.2016");
-
+        if(!$alldatas) return false;
         foreach($env_param as $param){
             $normal = $abnormal = array();
             foreach($alldatas as $data){
@@ -224,6 +230,29 @@ class Mongo_api extends MY_library{
 
         return $ret;
     }
+
+    //博物馆综合统计2-各环境参数达标总和未达标总和-周/月数据(累加天数据)
+    public function count_total_abnormal_2($env_id){
+        $env_param = array("temperature","humidity","light","uv","voc");
+        $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
+
+        $sumstr = '';
+        foreach($env_param as $v){
+            $sumstr .= ",SUM({$v}_total) as {$v}_total,SUM({$v}_abnormal) as {$v}_abnormal";
+        }
+        $sumstr = substr($sumstr,1);
+        $alldatas = $this->CI->db
+            ->select($sumstr)
+            ->where("env_type",$env_type[$env_id])
+            ->where("mid",$this->museum_id)
+            ->where_in("date",$this->_date_list($this->date_start,$this->date_end))
+            ->group_by("mid")
+            ->get("data_complex")
+            ->result_array();
+        if(!$alldatas) return array();
+        return $alldatas[0];
+    }
+
 
     public function data_envtype_param(){
         $rs = array();
