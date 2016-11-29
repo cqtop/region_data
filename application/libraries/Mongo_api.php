@@ -111,48 +111,19 @@ class Mongo_api extends MY_library{
 
     //博物馆综合统计
     public function count_data_complex($date,$env_id){
-        //判断日期 转换对应时间戳
-        switch ($date){
-            case "yesterday": //昨天
-                $this->btime = strtotime('-1 day 00:00:00');
-                $this->etime = strtotime('-1 day 23:59:59');
-                $date_str = "D".date("Ymd",$this->btime);
-                break;
-            case "week": //本周
-                if(date("w") == 1){ //处理上周数据
-                    $this->btime = mktime(0,0,0,date('m'),date('d')-date('w')-6,date('y'));
-                    $this->etime = mktime(23,59,59,date('m'),date('d')-date('w'),date('y'));
-                    $date_str = "W".date("YW",$this->etime);
-                }else{//本周
-                    $this->btime = mktime(0,0,0,date("m"),date("d")-(date("w")==0?7:date("w"))+1,date("Y"));
-                    $this->etime = strtotime('-1 day 23:59:59');
-                    $date_str = "W".date("YW",$this->etime);
-                }
-                break;
-            case "month": //本月
-                if(date("d") == "01"){ //处理上月数据
-                    $this->btime = mktime(0,0,0,date('m')-1,1,date('y'));
-                    $this->etime = mktime(23,59,59,date("m"),0,date("y"));
-                    $date_str = "M".date("Ym",$this->etime);
-                }else{//本月
-                    $this->btime = mktime(0,0,0,date('m'),1,date('y'));
-                    $this->etime = strtotime('-1 day 23:59:59');
-                    $date_str = "M".date("Ym");
-                }
-                break;
-        }
-        $this->date_start = date("Ymd",$this->btime);
-        $this->date_end = date("Ymd",$this->etime);
-
+        $this->date_conversion($date);
         $env_type = array(1=>"展厅", 2=>"展柜", 3=>"库房");
         $data = array();
         if(!$this->EnvNo[$env_id]) return false; //不存在该环境类型
 
-        $data['date'] = $date_str;
+        $data['date'] = $this->date_str;
         $data['env_type'] = $env_type[$env_id];
         $data['mid'] = $this->museum_id;
         $data['scatter_temperature'] = $this->count_scatter($env_id,'temperature');
         $data['scatter_humidity'] = $this->count_scatter($env_id,'humidity');
+        $data['scatter_light'] = $this->count_scatter($env_id,"light");
+        $data['scatter_uv'] = $this->count_scatter($env_id,"uv");
+        $data['scatter_voc'] = $this->count_scatter($env_id,"voc");
 
         //各环境达标和未达标总和
         if($date == "yesterday") { //天数据
@@ -180,8 +151,9 @@ class Mongo_api extends MY_library{
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where_in("areano",$this->EnvNo[$env_id])
             ->get("data.sensor.2016");
-        if(empty($datas))return null;
+        if(empty($datas)) return null;
         $list = array_column(array_column($datas,"param"),$type);//一维数据列表
+        if(empty($list)) return null; //无对应环境参数数据
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
 
