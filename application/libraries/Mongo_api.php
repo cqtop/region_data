@@ -268,14 +268,14 @@ class Mongo_api extends MY_library{
 //        $end_time = strtotime("+".(7-$day_num)." day");
         $start_time = $end_time - 24*60*60*($day_num-1);
         $end_time = $end_time + 24*60*60*(7-$day_num);
-        $data_week = $this->data_envtype($start_time, $end_time,"W".date("Y").date("W"));//周
+        $data_week = $this->data_envtype($start_time, $end_time,"W".date("YW"));//周
         $rs = array_merge($rs,$data_week);
         $this->day = false;
 //        $start_time = strtotime(date("Y-m-")."01");
 //        $end_time = strtotime(date("Y-m-").date("t"));
         $start_time = strtotime("2016-01-01");
         $end_time = strtotime("2016-01-31");
-        $data_month = $this->data_envtype($start_time, $end_time,"M".date("Y").date("m"));//月
+        $data_month = $this->data_envtype($start_time, $end_time,"M".date("Ym"));//月
         $rs = array_merge($rs,$data_month);
         return $rs;
     }

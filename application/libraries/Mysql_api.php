@@ -245,13 +245,13 @@ class Mysql_api extends MY_library{
         $day_num = date("w");
         $start_time = strtotime("-".($day_num-1)." day");
         $end_time = strtotime("+".(7-$day_num)." day");
-        $data_week = $this->data_envtype($start_time, $end_time,"W".date("Y").date("W"));//周
+        $data_week = $this->data_envtype($start_time, $end_time,"W".date("YW"));//周
         $rs = array_merge($rs,$data_week);
 
         $this->day = false;
         $start_time = strtotime(date("Y-m-")."01");
         $end_time = strtotime(date("Y-m-").date("t"));
-        $data_month = $this->data_envtype($start_time, $end_time,"M".date("Y").date("m"));//月
+        $data_month = $this->data_envtype($start_time, $end_time,"M".date("Ym"));//月
         $rs = array_merge($rs,$data_month);
         return $rs;
     }
