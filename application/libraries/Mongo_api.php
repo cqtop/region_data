@@ -156,8 +156,8 @@ class Mongo_api extends MY_library{
         if(empty($list)) return null; //无对应环境参数数据
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
-
-        return round($sd/$avg,3);
+        if($avg) return round($sd/$avg,3);
+        return 0;
     }
     //博物馆综合统计-各参数达标总和未达标总和-天数据
     public function count_total_abnormal($env_id){
