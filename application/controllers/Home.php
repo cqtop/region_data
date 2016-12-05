@@ -15,8 +15,10 @@ class Home extends CI_Controller {
 
 	/**
 	* @param $no 序号（第几个博物馆）
+	 * @param $date 日期（某天的数据）
 	*/
-	public function index($no=0){
+	public function index($no=0,$date=''){
+		$this->date = $date;
 		lineMsg('+++ start memory:'.number_format(memory_get_usage()));
 		$this->museum = $this->db->limit(1, $no)->get("museum")->row_array();
 		if(empty($this->museum)){
