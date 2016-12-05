@@ -310,7 +310,50 @@ class Mongo_api extends MY_library{
         return $all;
     }
 
+
     private function deal_param($arr,$data,$ty,$date){
+        $rs = array();
+
+        foreach ($arr as $k=>$p){
+            foreach ($p as $k1=>$p1){
+                $param_data = array();
+                $alert = 0;
+
+                foreach ($data as $value){
+                    $equip_id = 0;
+                    $time = 0;
+                    if(array_key_exists("equip_id",$value)){
+                        $equip_id = $value["equip_id"];
+                    }
+                    if(array_key_exists("receivetime",$value)){
+                        $time = $value["receivetime"];
+                    }
+                    if (array_key_exists("param",$value) && array_key_exists($k1,$value["param"])){
+                        if(array_key_exists("areano",$value)){
+                            $param_data[$value["areano"]][] = array("data"=>$value["param"][$k1],"equip_id"=>$equip_id,"time"=>$time);
+                        }
+                    }
+
+                    if (array_key_exists("alerts",$value) && !empty($value["alerts"])){
+                        foreach ($value["alerts"] as $v){
+                            if(array_key_exists("parameter",$v) && $v["parameter"] == $k1){
+                                $alert ++;
+                            }
+                        }
+                    }
+                }
+
+                if($param_data){
+                    $rs[] = $this->calculate($k,$ty,$date,$param_data,$alert,$k1);
+                }
+            }
+        }
+
+
+        return $rs;
+    }
+
+    private function deal_param1($arr,$data,$ty,$date){
         //$temperature = $uv = $voc = $humidity = $light = array();
         $alerts = array(
             "temperature"=>0,
