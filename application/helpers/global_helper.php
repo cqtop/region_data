@@ -20,17 +20,14 @@ if(! function_exists("debug")){
 */
 if(! function_exists("lineMsg")){
 	function lineMsg($msg, $e=FALSE){
-		if(is_cli()){
-			echo iconv('utf-8', 'GBK', $msg).'...'.date('H:i:s').PHP_EOL;
-		}else{
-			echo $msg.'...'.date('H:i:s').'<br>';
-		}
+		$msg .= '...'.date('H:i:s').PHP_EOL;
 		
 		// 日志
 		$f = fopen('logs'.date('Ym').'.log', 'a');
-		fwrite($f, $msg.'...'.date('H:i:s').PHP_EOL);
+		fwrite($f, $msg);
 		fclose($f);
 
+		echo $msg.(is_cli()?'':'<br>');
 		if($e) exit;
 	}
 }
