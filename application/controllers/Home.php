@@ -8,7 +8,6 @@ class Home extends CI_Controller {
 	public function __construct(){
 		parent::__construct();
 
-		lineMsg('===================='.date('Y-m-d'));
 		//$this->date = "2016-11-15";
 
 	}
@@ -19,6 +18,7 @@ class Home extends CI_Controller {
 	*/
 	public function index($no=0,$date=''){
 		$this->date = $date;
+		lineMsg('===================='.$this->date);
 		lineMsg('+++ start memory:'.number_format(memory_get_usage()));
 		$this->museum = $this->db->limit(1, $no)->get("museum")->row_array();
 		if(empty($this->museum)){
