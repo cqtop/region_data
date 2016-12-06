@@ -206,7 +206,7 @@ class Mysql_api extends MY_library{
 
     public function data_envtype_param(){
         $rs = array();
-        $start_time = $this->date?strtotime($this->date):strtotime("-1 day");
+        $start_time = $this->date?strtotime($this->date):strtotime(date("Y-m-d",strtotime("-1 day")));
         $end_time = $start_time + 24*60*60;
         $this->day = date("Y年m月d日",$start_time);
         $data_day = $this->data_envtype($start_time, $end_time,"D".date("Ymd",$start_time));//天
@@ -214,8 +214,8 @@ class Mysql_api extends MY_library{
 
         $this->day = false;
         $day_num = date("w");
-        $start_time = strtotime("-".($day_num-1)." day");
-        $end_time = strtotime("+".(7-$day_num)." day");
+        $start_time = strtotime(date("Y-m-d",strtotime("-".($day_num-1)." day")));
+        $end_time = $start_time + 24*60*60*7;
         $data_week = $this->data_envtype($start_time, $end_time,"W".date("YW"));//周
         $rs = array_merge($rs,$data_week);
 

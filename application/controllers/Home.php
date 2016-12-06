@@ -9,7 +9,6 @@ class Home extends CI_Controller {
 		parent::__construct();
 
 		lineMsg('===================='.date('Y-m-d'));
-		//$this->date = "2016-11-15";
 
 	}
 
@@ -32,10 +31,10 @@ class Home extends CI_Controller {
 		try{
 			$this->load->library($this->museum['db_type']."_api", array('db'=>$this->subdb,'mid'=>$this->museum['id'],'date'=>$this->date),"api");
 
-			$this->count_base();
-			lineMsg('博物馆基础数据统计完成');
-			$this->count_complex();
-			lineMsg('博物馆综合统计完成');
+//			$this->count_base();
+//			lineMsg('博物馆基础数据统计完成');
+//			$this->count_complex();
+//			lineMsg('博物馆综合统计完成');
 
 			$this->data_envtype_param();
 			lineMsg('环境类型参数综合统计完成');
