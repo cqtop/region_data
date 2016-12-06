@@ -154,8 +154,8 @@ class Mongo_api extends MY_library{
         if(empty($list)) return null; //无对应环境参数数据
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
-
-        return round($sd/$avg,3);
+        if($avg) return round($sd/$avg,3);
+        return 0;
     }
     //博物馆综合统计-各参数达标总和未达标总和-天数据
     public function count_total_abnormal($env_id){
@@ -226,26 +226,26 @@ class Mongo_api extends MY_library{
 
     public function data_envtype_param(){
         $rs = array();
-        //$start_time = $this->date?strtotime($this->date):strtotime("-1 day");
-        $start_time = $this->date?strtotime($this->date):strtotime("2016-01-03");
+        $start_time = $this->date?strtotime($this->date):strtotime("-1 day");
+        //$start_time = $this->date?strtotime($this->date):strtotime("2016-01-03");
         $end_time = $start_time + 24*60*60;
         $this->day = date("Y年m月d日",$start_time);
         $data_day = $this->data_envtype($start_time, $end_time,"D".date("Ymd",$start_time));//天
         $rs = array_merge($rs,$data_day);
         $this->day = false;
         $day_num = date("w");
-//        $start_time = strtotime("-".($day_num-1)." day");
-//        $end_time = strtotime("+".(7-$day_num)." day");
-        $start_time = $end_time - 24*60*60*($day_num-1);
-        $end_time = $end_time + 24*60*60*(7-$day_num);
-        $data_week = $this->data_envtype($start_time, $end_time,"W".date("Y").date("W"));//周
+        $start_time = strtotime("-".($day_num-1)." day");
+        $end_time = strtotime("+".(7-$day_num)." day");
+//        $start_time = $end_time - 24*60*60*($day_num-1);
+//        $end_time = $end_time + 24*60*60*(7-$day_num);
+        $data_week = $this->data_envtype($start_time, $end_time,"W".date("YW"));//周
         $rs = array_merge($rs,$data_week);
         $this->day = false;
-//        $start_time = strtotime(date("Y-m-")."01");
-//        $end_time = strtotime(date("Y-m-").date("t"));
-        $start_time = strtotime("2016-01-01");
-        $end_time = strtotime("2016-01-31");
-        $data_month = $this->data_envtype($start_time, $end_time,"M".date("Y").date("m"));//月
+        $start_time = strtotime(date("Y-m-")."01");
+        $end_time = strtotime(date("Y-m-").date("t"));
+//        $start_time = strtotime("2016-01-01");
+//        $end_time = strtotime("2016-01-31");
+        $data_month = $this->data_envtype($start_time, $end_time,"M".date("Ym"));//月
         $rs = array_merge($rs,$data_month);
         return $rs;
     }
@@ -308,7 +308,50 @@ class Mongo_api extends MY_library{
         return $all;
     }
 
+
     private function deal_param($arr,$data,$ty,$date){
+        $rs = array();
+
+        foreach ($arr as $k=>$p){
+            foreach ($p as $k1=>$p1){
+                $param_data = array();
+                $alert = 0;
+
+                foreach ($data as $value){
+                    $equip_id = 0;
+                    $time = 0;
+                    if(array_key_exists("equip_id",$value)){
+                        $equip_id = $value["equip_id"];
+                    }
+                    if(array_key_exists("receivetime",$value)){
+                        $time = $value["receivetime"];
+                    }
+                    if (array_key_exists("param",$value) && array_key_exists($k1,$value["param"])){
+                        if(array_key_exists("areano",$value)){
+                            $param_data[$value["areano"]][] = array("data"=>$value["param"][$k1],"equip_id"=>$equip_id,"time"=>$time);
+                        }
+                    }
+
+                    if (array_key_exists("alerts",$value) && !empty($value["alerts"])){
+                        foreach ($value["alerts"] as $v){
+                            if(array_key_exists("parameter",$v) && $v["parameter"] == $k1){
+                                $alert ++;
+                            }
+                        }
+                    }
+                }
+
+                if($param_data){
+                    $rs[] = $this->calculate($k,$ty,$date,$param_data,$alert,$k1);
+                }
+            }
+        }
+
+
+        return $rs;
+    }
+
+    private function deal_param1($arr,$data,$ty,$date){
         //$temperature = $uv = $voc = $humidity = $light = array();
         $alerts = array(
             "temperature"=>0,

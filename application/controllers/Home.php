@@ -8,15 +8,17 @@ class Home extends CI_Controller {
 	public function __construct(){
 		parent::__construct();
 
-		lineMsg('===================='.date('Y-m-d'));
 		//$this->date = "2016-11-15";
 
 	}
 
 	/**
 	* @param $no 序号（第几个博物馆）
+	 * @param $date 日期（某天的数据）
 	*/
-	public function index($no=0){
+	public function index($no=0,$date=''){
+		$this->date = $date;
+		lineMsg('===================='.($date?$date:date('Y-m-d')));
 		lineMsg('+++ start memory:'.number_format(memory_get_usage()));
 		$this->museum = $this->db->limit(1, $no)->get("museum")->row_array();
 		if(empty($this->museum)){
