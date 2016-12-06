@@ -7,17 +7,15 @@ class Home extends CI_Controller {
 	var $date = null; //获取某天的数据
 	public function __construct(){
 		parent::__construct();
-		
 		//$this->date = "2016-11-15";
-
 	}
-
 	/**
-	* @param $no 序号（第几个博物馆）
+	 * @param $no 序号（第几个博物馆）
 	 * @param $date 日期（某天的数据）
-	*/
+	 */
 	public function index($no=0,$date=''){
 		$this->date = $date;
+		lineMsg('===================='.($date?$date:date('Y-m-d')));
 		lineMsg('+++ start memory:'.number_format(memory_get_usage()));
 		$this->museum = $this->db->limit(1, $no)->get("museum")->row_array();
 		if(empty($this->museum)){
@@ -30,15 +28,12 @@ class Home extends CI_Controller {
 		$this->db->trans_begin();
 		try{
 			$this->load->library($this->museum['db_type']."_api", array('db'=>$this->subdb,'mid'=>$this->museum['id'],'date'=>$this->date),"api");
-
 			$this->count_base();
 			lineMsg('博物馆基础数据统计完成');
 			$this->count_complex();
 			lineMsg('博物馆综合统计完成');
-
 			$this->data_envtype_param();
 			lineMsg('环境类型参数综合统计完成');
-
 			$this->db->trans_commit();
 		}catch(Exception $e){
 			$this->db->trans_rollback();
@@ -48,9 +43,7 @@ class Home extends CI_Controller {
 		lineMsg('+++ end memory:'.number_format(memory_get_usage()));
 		lineMsg('+++ memory peak:'.number_format(memory_get_peak_usage()));
 	}
-
 	public function data_envtype_param(){ //环境类型参数综合统计
-
 		try{
 			$datas = $this->api->data_envtype_param();
 			foreach ($datas as $data){
@@ -88,7 +81,6 @@ class Home extends CI_Controller {
 			throw new Exception("统计博物馆环境分析数据失败！");
 		}
 	}
-
 	// 博物馆基础数据统计
 	function count_base(){
 		try{
@@ -102,12 +94,10 @@ class Home extends CI_Controller {
 				$data_base['mid'] = $this->museum['id'];
 				$this->db->insert('data_base', $data_base);
 			}
-
 		}catch(Exception $e){
 			throw new Exception("博物馆基础数据统计失败！");
 		}
 	}
-
 	// 博物馆综合统计
 	function count_complex(){
 		try{
@@ -116,16 +106,16 @@ class Home extends CI_Controller {
 					$result = $this->api->count_data_complex($date,$k);
 					if(!$result) continue;
 					$old_datas = $this->db
-							->where("date",$result['date'])
-							->where("env_type",$v)
-							->where("mid",$this->museum['id'])
-							->get("data_complex")
-							->result_array();
+						->where("date",$result['date'])
+						->where("env_type",$v)
+						->where("mid",$this->museum['id'])
+						->get("data_complex")
+						->result_array();
 					if($old_datas) {
 						$this->db->where('date',$result['date'])
-								->where("env_type",$v)
-								->where("mid",$this->museum['id'])
-								->update('data_complex', $result);
+							->where("env_type",$v)
+							->where("mid",$this->museum['id'])
+							->update('data_complex', $result);
 					}else{
 						$this->db->insert("data_complex",$result);
 					}
@@ -135,9 +125,6 @@ class Home extends CI_Controller {
 			throw new Exception("博物馆综合统计失败！");
 		}
 	}
-
-
-
 	// 初始化数据库
 	private function initdb(){
 		$museum = $this->museum;
@@ -177,10 +164,7 @@ class Home extends CI_Controller {
 		}catch(Exception $e){
 			lineMsg("数据库初始化失败：".$e->getMessage(), true);
 		}
-
 	}
-
-
 	// 测试
 	public function test(){
 		$server = 'mongodb://192.168.8.11:27017';
