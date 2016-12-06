@@ -7,7 +7,7 @@ class Home extends CI_Controller {
 	var $date = null; //获取某天的数据
 	public function __construct(){
 		parent::__construct();
-
+		//$this->date = "2016-11-15";
 		lineMsg('===================='.date('Y-m-d'));
 
 	}
