@@ -121,11 +121,9 @@ class Mysql_api extends MY_library{
         //各种环境参数达标和未达标总和
         if($date == "yesterday") { //天数据
             $ta_datas = $this->count_total_abnormal($env_id);
-            if($ta_datas){
-                foreach($ta_datas as $param => $v){
-                    $data[$param."_total"] = $v['total'];
-                    $data[$param."_abnormal"] = $v['abnormal'];
-                }
+            foreach($ta_datas as $param => $v){
+                $data[$param."_total"] = $v['total'];
+                $data[$param."_abnormal"] = $v['abnormal'];
             }
         } else { // 周/月数据统计
             $ta_datas = $this->count_total_abnormal_2($env_id);
@@ -163,7 +161,7 @@ class Mysql_api extends MY_library{
             ->where("equip_time<",$this->etime)
             ->where_in("env_no",$this->EnvNo[$env_id])
             ->get("data_sensor")->result_array();
-        if(!$alldatas) return false;
+        //if(!$alldatas) return false;
         foreach($env_param as $param){
             $normal = $abnormal = array();
             foreach($alldatas as $data){

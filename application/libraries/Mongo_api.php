@@ -128,11 +128,9 @@ class Mongo_api extends MY_library{
         //各环境达标和未达标总和
         if($date == "yesterday") { //天数据
             $ta_datas = $this->count_total_abnormal($env_id);
-            if($ta_datas){
-                foreach($ta_datas as $param => $v){
-                    $data[$param."_total"] = $v['total'];
-                    $data[$param."_abnormal"] = $v['abnormal'];
-                }
+            foreach($ta_datas as $param => $v){
+                $data[$param."_total"] = $v['total'];
+                $data[$param."_abnormal"] = $v['abnormal'];
             }
         } else { // 周/月数据统计
             $ta_datas = $this->count_total_abnormal_2($env_id);
@@ -184,7 +182,7 @@ class Mongo_api extends MY_library{
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where_in("areano",$this->EnvNo[$env_id])
             ->get("data.sensor.2016");
-        if(!$alldatas) return false;
+        //if(!$alldatas) return false;
         foreach($env_param as $param){
             $normal = $abnormal = array();
             foreach($alldatas as $data){
