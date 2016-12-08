@@ -372,4 +372,16 @@ class Mysql_api extends MY_library{
         return $rs;
     }
 
+
+    // 测试统计信息
+    public function countdata(){
+        $daytime = strtotime($this->date);
+        $monthtime1 = strtotime(date('Y-m-01', $daytime));
+        $monthtime2 = strtotime(date('Y-m-01', strtotime('+1 month',$daytime)))-1;
+        $data = array();
+        $data['count_day'] = $this->db["env"]->where("equip_time > ", $daytime)->where("equip_time < ", $daytime+86400)->count_all_results("data_sensor");
+        $data['count_month'] = $this->db["env"]->where("equip_time > ", $monthtime1)->where("equip_time < ", $monthtime2)->count_all_results("data_sensor");
+        return $data;
+    }
+
 }

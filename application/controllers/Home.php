@@ -167,14 +167,24 @@ class Home extends CI_Controller {
 			lineMsg("数据库初始化失败：".$e->getMessage(), true);
 		}
 	}
-	// 测试
-	public function test(){
-		$server = 'mongodb://192.168.8.11:27017';
-		$options = array();
-		// $options['username'] = '';
-		// $options['password'] = '';
-		$mongo = new MongoClient($server, $options);
-		$data = $mongo->museum_ya->relic->base->find();
-		debug(iterator_to_array($data));
+
+
+	// 统计
+	public function countdata($date=''){
+		$this->date = $date?$date:date('Y-m-d', strtotime('yesterday'));
+		echo '====== '.$this->date.' ======<br>';
+
+		$museum = $this->db->get("museum")->result_array();
+		foreach ($museum as $m) {
+			echo '+++ '.$m['name'].'<br>';
+			$this->museum = $m;
+			$this->initdb();
+			unset($this->api);
+			$this->load->library($m['db_type']."_api", array('db'=>$this->subdb,'mid'=>$m['id'],'date'=>$this->date),"api");
+			$countdata = $this->api->countdata();
+			echo 'count_day: '.number_format($countdata['count_day']).'<br>';
+			echo 'count_month: '.number_format($countdata['count_month']).'<br>';
+		}
+
 	}
 }

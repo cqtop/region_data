@@ -346,4 +346,17 @@ class Mongo_api extends MY_library{
         return $rs;
     }
 
+
+
+    // 测试统计信息
+    public function countdata(){
+        $daytime = strtotime($this->date);
+        $monthtime1 = strtotime(date('Y-m-01', $daytime));
+        $monthtime2 = strtotime(date('Y-m-01', strtotime('+1 month',$daytime)))-1;
+        $data = array();
+        $data['count_day'] = $this->mongo_db->where_between("receivetime", $daytime, $daytime+86400)->count("data.sensor.".date("Y"));
+        $data['count_month'] = $this->mongo_db->where_between("receivetime", $monthtime1, $monthtime2)->count("data.sensor.".date("Y"));
+        return $data;
+    }
+
 }
