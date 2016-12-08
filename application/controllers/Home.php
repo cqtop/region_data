@@ -15,7 +15,7 @@ class Home extends CI_Controller {
 	 */
 	public function index($no=0,$date=''){
 		$this->date = $date;
-		lineMsg('===================='.($date?$date:date('Y-m-d')));
+		lineMsg('===================='.($date?$date:date('Y-m-d', strtotime('yesterday'))));
 		lineMsg('+++ start memory:'.number_format(memory_get_usage()));
 		$this->museum = $this->db->limit(1, $no)->get("museum")->row_array();
 		if(empty($this->museum)){
