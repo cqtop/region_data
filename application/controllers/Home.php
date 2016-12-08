@@ -68,12 +68,14 @@ class Home extends CI_Controller {
 					foreach ($abnormal as $k=>$v){
 						$abnormal[$k]["depid"] = $depid;
 					}
+					$this->db->delete("data_abnormal","depid = ".$depid);
 					$this->db->insert_batch("data_abnormal",$abnormal);
 				}
 				if(!empty($wave_arr)){
 					foreach ($wave_arr as $k=>$v){
 						$wave_arr[$k]["depid"] = $depid;
 					}
+					$this->db->delete("data_wave_abnormal","depid = ".$depid);
 					$this->db->insert_batch("data_wave_abnormal",$wave_arr);
 				}
 			}
