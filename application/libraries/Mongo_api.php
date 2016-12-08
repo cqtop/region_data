@@ -264,47 +264,47 @@ class Mongo_api extends MY_library{
     }
 
     private function data_envtype($start,$end,$date){
+        $query = array('start' => $start, 'end' => $end);
 
         $all = array();
-        //$now_time = strtotime("2016-01-05");//time();
-        $all_zt = $this->allData($this->hall, $start, $end);
         $param_arr = $this->texture["common"];
         foreach ($this->texture["zt"] as $k=>$zt){
             $param_arr[$k] = $zt;
         }
-        $data_all = $this->deal_param($param_arr, $all_zt,"展厅",$date);
-        $all = array_merge($all,$data_all);
-        //print_r($data_all);exit;
+        $query['area_no'] = $this->hall;
+        $data_deal = $this->deal_param($param_arr, $query,"展厅",$date);
+        $all = array_merge($all,$data_deal);
 
-        $common_zg = $this->allData($this->showcase, $start, $end);
-        $data_common_zg = $this->deal_param($this->texture["common"], $common_zg,"展柜",$date);
-        $all = array_merge($all,$data_common_zg);
-        //print_r($data_common_zg);exit;
+        $query['area_no'] = $this->showcase;
+        $data_deal = $this->deal_param($this->texture["common"], $query,"展柜",$date);
+        $all = array_merge($all,$data_deal);
 
-        $common_kf = $this->allData($this->storeroom, $start, $end);
-        $data_common_kf = $this->deal_param($this->texture["common"], $common_kf,"库房",$date);
-        $all = array_merge($all,$data_common_kf);
+        $query['area_no'] = $this->storeroom;
+        $data_deal = $this->deal_param($this->texture["common"], $query,"库房",$date);
+        $all = array_merge($all,$data_deal);
         foreach ($this->texture_no as $k => $nums){
             $same_arr = array_values(array_intersect($nums,$this->showcase)); //与展柜交集
             $arr = array($k=>$this->texture["zgkf"][$k]);
             if(!empty($same_arr)){
-                $texture_zt = $this->allData($same_arr, $start, $end);
-                $data_texture_zt =  $this->deal_param($arr, $texture_zt,"展柜",$date);
-                $all = array_merge($all,$data_texture_zt);
+                $query['area_no'] = $same_arr;
+                $data_deal =  $this->deal_param($arr, $query,"展柜",$date);
+                $all = array_merge($all,$data_deal);
             }
 
             $same_arr = array_values(array_intersect($nums,$this->storeroom)); //与库房交集
             if(!empty($same_arr)){
-                $texture_kf = $this->allData($same_arr, $start, $end);
-                $data_texture_kf =  $this->deal_param($arr, $texture_kf,"库房",$date);
-                $all = array_merge($all,$data_texture_kf);
+                $query['area_no'] = $same_arr;
+                $data_deal =  $this->deal_param($arr, $query,"库房",$date);
+                $all = array_merge($all,$data_deal);
             }
         }
         return $all;
     }
 
 
-    private function deal_param($arr,$data,$ty,$date){
+    private function deal_param($arr,$query,$ty,$date){
+        $data = $this->allData($query['area_no'], $query['start'], $query['end']);
+
         $rs = array();
 
         foreach ($arr as $k=>$p){
@@ -343,87 +343,6 @@ class Mongo_api extends MY_library{
         }
 
 
-        return $rs;
-    }
-
-    private function deal_param1($arr,$data,$ty,$date){
-        //$temperature = $uv = $voc = $humidity = $light = array();
-        $alerts = array(
-            "temperature"=>0,
-            "uv"=>0,
-            "voc"=>0,
-            "humidity"=>0,
-            "light"=>0
-        );
-        $temperature_areano = $uv_areano = $voc_areano = $humidity_areano = $light_areano = array();
-        $rs = array();
-        foreach ($data as $value){
-            $equip_id = 0;
-            $time = 0;
-            if(array_key_exists("equip_id",$value)){
-                $equip_id = $value["equip_id"];
-            }
-            if(array_key_exists("receivetime",$value)){
-                $time = $value["receivetime"];
-            }
-            if (array_key_exists("param",$value)){
-                foreach ($arr as $k=>$p){
-                    foreach ($p as $k1=>$p1){
-
-                        if($k1 == "temperature" && array_key_exists("temperature",$value["param"])){
-                            //$temperature[] = $value["param"][$k1];
-                            if(array_key_exists("areano",$value)){
-                                $temperature_areano[$value["areano"]][] = array("data"=>$value["param"][$k1],"equip_id"=>$equip_id,"time"=>$time);
-                            }
-                        }elseif ($k1 == "uv" && array_key_exists("uv",$value["param"])){
-                            //$uv[] = $value["param"][$k1];
-                            if(array_key_exists("areano",$value)){
-                                $uv_areano[$value["areano"]][] = array("data"=>$value["param"][$k1],"equip_id"=>$equip_id,"time"=>$time);
-                            }
-                        }elseif ($k1 == "voc" && array_key_exists("voc",$value["param"])){
-                            //$voc[] = $value["param"][$k1];
-                            if(array_key_exists("areano",$value)){
-                                $voc_areano[$value["areano"]][] = array("data"=>$value["param"][$k1],"equip_id"=>$equip_id,"time"=>$time);
-                            }
-                        }elseif ($k1 == "humidity" && array_key_exists("humidity",$value["param"])){
-                            //$humidity[] = $value["param"][$k1];
-                            if(array_key_exists("areano",$value)){
-                                $humidity_areano[$value["areano"]][] = array("data"=>$value["param"][$k1],"equip_id"=>$equip_id,"time"=>$time);
-                            }
-                        }elseif ($k1 == "light" && array_key_exists("light",$value["param"])){
-                            //$light[] = $value["param"][$k1];
-                            if(array_key_exists("areano",$value)){
-                                $light_areano[$value["areano"]][] = array("data"=>$value["param"][$k1],"equip_id"=>$equip_id,"time"=>$time);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (array_key_exists("alerts",$value) && !empty($value["alerts"])){
-                foreach ($value["alerts"] as $v){
-                    if(array_key_exists("parameter",$v) && $v["parameter"] && array_key_exists($v["parameter"],$alerts)){
-                        $alerts[$v["parameter"]] ++;
-                    }
-                }
-            }
-        }
-
-        foreach ($arr as $k=>$p){
-            foreach ($p as $k1=>$p1){
-                if($k1 == "temperature" && !empty($temperature_areano)){
-                    $rs[] = $this->calculate($k,$ty,$date,$temperature_areano,$alerts[$k1],$k1);
-                }elseif ($k1 == "uv" && !empty($uv_areano)){
-                    $rs[] = $this->calculate($k,$ty,$date,$uv_areano,$alerts[$k1],$k1);
-                }elseif ($k1 == "voc" && !empty($voc_areano)){
-                    $rs[] = $this->calculate($k,$ty,$date,$voc_areano,$alerts[$k1],$k1);
-                }elseif ($k1 == "humidity" && !empty($humidity_areano)){
-                    $rs[] = $this->calculate($k,$ty,$date,$humidity_areano,$alerts[$k1],$k1);
-                }elseif ($k1 == "light" && !empty($light_areano)){
-                    $rs[] = $this->calculate($k,$ty,$date,$light_areano,$alerts[$k1],$k1);
-                }
-            }
-        }
         return $rs;
     }
 
