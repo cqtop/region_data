@@ -3,14 +3,17 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 require_once("MY_library.php");
 class Mongo_api extends MY_library{
     private $mongo_db = null;
+    private $year = null;
     public function __construct($param)
     {
         parent::__construct();
         require_once("Mongo_db.php");
         $this->mongo_db = new Mongo_db($param['db']);
         $this->museum_id = $param["mid"];
+        $this->year = date("Y",strtotime("-1 day"));
         if($param["date"]){
             $this->date = $param["date"];
+            $this->year = substr($param["date"],0,4);
         }
         $this->getArea();
         $this->getEnvNo();
@@ -148,7 +151,7 @@ class Mongo_api extends MY_library{
             ->select(array("param"))
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where_in("areano",$this->EnvNo[$env_id])
-            ->get("data.sensor.2016");
+            ->get("data.sensor.".$this->year);
         if(empty($datas)) return null;
         $list = array_column(array_column($datas,"param"),$type);//一维数据列表
         if(empty($list)) return null; //无对应环境参数数据
@@ -181,7 +184,7 @@ class Mongo_api extends MY_library{
                 "pid"))
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where_in("areano",$this->EnvNo[$env_id])
-            ->get("data.sensor.2016");
+            ->get("data.sensor.".$this->year);
         //if(!$alldatas) return false;
         foreach($env_param as $param){
             $normal = $abnormal = array();
@@ -249,7 +252,7 @@ class Mongo_api extends MY_library{
         $data = $this->mongo_db->select(array("alerts","param","areano","equip_id","receivetime")) //展厅，算全部参数
         ->where_in("areano",$area_no)
             ->where_between("receivetime", $start, $end)
-            ->get("data.sensor.".date("Y"));
+            ->get("data.sensor.".$this->year);
         return $data;
     }
 
@@ -354,8 +357,8 @@ class Mongo_api extends MY_library{
         $monthtime1 = strtotime(date('Y-m-01', $daytime));
         $monthtime2 = strtotime(date('Y-m-01', strtotime('+1 month',$daytime)))-1;
         $data = array();
-        $data['count_day'] = $this->mongo_db->where_between("receivetime", $daytime, $daytime+86400)->count("data.sensor.".date("Y"));
-        $data['count_month'] = $this->mongo_db->where_between("receivetime", $monthtime1, $monthtime2)->count("data.sensor.".date("Y"));
+        $data['count_day'] = $this->mongo_db->where_between("receivetime", $daytime, $daytime+86400)->count("data.sensor.".$this->year);
+        $data['count_month'] = $this->mongo_db->where_between("receivetime", $monthtime1, $monthtime2)->count("data.sensor.".$this->year);
         return $data;
     }
 
