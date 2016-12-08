@@ -96,10 +96,10 @@ class MY_library{
         foreach ($area_no_normal as $area_no => $value){
             $range_normal[] = $range_normal_areano[$area_no][] = max($value) - min($value);
         }
-        $min_range = min($range);
-        $max_range = max($range);
-        $min_range_normal = min($range_normal);
-        $max_range_normal = max($range_normal);
+        $min_range = round(min($range),2);
+        $max_range = round(max($range),2);
+        $min_range_normal = round(min($range_normal),2);
+        $max_range_normal = round(max($range_normal),2);
         $num = $num_normal = 0;
         if($p == "temperature"){
             if($min_range>=4){
