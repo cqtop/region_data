@@ -150,7 +150,7 @@ class Mysql_api extends MY_library{
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
 
-        return round($sd/$avg,3);//离散系数
+        return round($sd/$avg,4);//离散系数
     }
     //博物馆综合统计-各环境参数达标总和未达标总和-天数据
     public function count_total_abnormal($env_id){
