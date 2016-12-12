@@ -190,8 +190,10 @@ class Mongo_api extends MY_library{
             $normal = $abnormal = array();
             foreach($alldatas as $data){
                 if(isset($data['param'][$param])){
-                    if(isset($data['alerts']) && in_array($param,$data['alerts'])){ //存在告警字段和对应的告警参数
-                        $abnormal[] = $data['param'][$param];
+                    if(isset($data['alerts'])){ //存在告警字段
+                        $alarm_list = array_column($data['alerts'],"parameter");
+                        if(in_array($param,$alarm_list)) $abnormal[] = $data['param'][$param]; //包含告警参数
+                        else $normal[] = $data['param'][$param];
                     }else{
                         $normal[] = $data['param'][$param];
                     }
