@@ -9,11 +9,40 @@ class Home extends CI_Controller {
 		parent::__construct();
 		//$this->date = "2016-11-15";
 	}
+
+
+	// 主页 日志
+	public function index(){
+		if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=='XMLHttpRequest'){
+			$month = $this->input->post('month');
+			$file = "./logs/{$month}.log";
+			if(file_exists($file)){
+				echo file_get_contents($file);
+			}else{
+				echo '文件未找到';
+			}
+		}else{
+			$month = array();
+			if ($handle = opendir('./logs')) {
+			    while (false !== ($file = readdir($handle))) {
+			        if(preg_match("/^(\d{6})\.log$/", $file, $matches)){
+			        	array_push($month, $matches[1]);
+			        }
+			    }
+			    closedir($handle);
+			}
+
+			$data['month'] = $month;
+			$this->load->view('home', $data);
+		}
+	}
+
+
 	/**
 	 * @param $no 序号（第几个博物馆）
 	 * @param $date 日期（某天的数据）
 	 */
-	public function index($no=0,$date=''){
+	public function count($no=0,$date=''){
 		$this->date = $date;
 		lineMsg(PHP_EOL.'============== '.($date?$date:date('Y-m-d', strtotime('yesterday'))).' ========');
 		lineMsg('+++ start memory:'.number_format(memory_get_usage()));
@@ -43,6 +72,8 @@ class Home extends CI_Controller {
 		lineMsg('+++ end memory:'.number_format(memory_get_usage()));
 		lineMsg('+++ memory peak:'.number_format(memory_get_peak_usage()));
 	}
+
+
 	public function data_envtype_param(){ //环境类型参数综合统计
 		try{
 			$datas = $this->api->data_envtype_param();
@@ -170,7 +201,7 @@ class Home extends CI_Controller {
 
 
 	// 统计
-	public function countdata($date=''){
+	public function countmusem($date=''){
 		$this->date = $date?$date:date('Y-m-d', strtotime('yesterday'));
 		echo '====== '.$this->date.' ======<br>';
 
@@ -181,9 +212,9 @@ class Home extends CI_Controller {
 			$this->initdb();
 			unset($this->api);
 			$this->load->library($m['db_type']."_api", array('db'=>$this->subdb,'mid'=>$m['id'],'date'=>$this->date),"api");
-			$countdata = $this->api->countdata();
-			echo 'count_day: '.number_format($countdata['count_day']).'<br>';
-			echo 'count_month: '.number_format($countdata['count_month']).'<br>';
+			$data = $this->api->countmusem();
+			echo 'count_day: '.number_format($data['count_day']).'<br>';
+			echo 'count_month: '.number_format($data['count_month']).'<br>';
 		}
 
 	}
