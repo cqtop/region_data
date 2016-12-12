@@ -353,8 +353,8 @@ class Mongo_api extends MY_library{
 
 
 
-    // 测试统计信息
-    public function countdata(){
+    // 博物馆统计信息
+    public function countmusem(){
         $daytime = strtotime($this->date);
         $monthtime1 = strtotime(date('Y-m-01', $daytime));
         $monthtime2 = strtotime(date('Y-m-01', strtotime('+1 month',$daytime)))-1;

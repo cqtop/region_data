@@ -23,7 +23,7 @@ if(! function_exists("lineMsg")){
 		$msg .= '...'.date('H:i:s').PHP_EOL;
 		
 		// 日志
-		$f = fopen('logs'.date('Ym').'.log', 'a');
+		$f = fopen('./logs/'.date('Ym').'.log', 'a');
 		fwrite($f, $msg);
 		fclose($f);
 
