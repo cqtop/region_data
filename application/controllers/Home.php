@@ -32,7 +32,8 @@ class Home extends CI_Controller {
 			    closedir($handle);
 			}
 
-			$data['month'] = $month;
+			sort($month);
+			$data['month'] = array_reverse($month);
 			$this->load->view('home', $data);
 		}
 	}
