@@ -53,7 +53,7 @@ class Home extends CI_Controller {
 		}
 		// 初始化数据库
 		$this->initdb();
-		lineMsg('开始统计:'.$this->museum['name']);
+		lineMsg('开始统计:【'.$this->museum['name'].'】');
 		// 事务
 		$this->db->trans_begin();
 		try{
