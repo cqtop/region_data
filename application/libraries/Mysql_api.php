@@ -101,7 +101,14 @@ class Mysql_api extends MY_library{
     public function count_showcase(){
         return $this->db['base']->where("type","展柜")->count_all_results("env");
     }
-
+    //博物馆基础数据-展厅数量
+    public function count_hall(){
+        return $this->db['base']->where("type","展厅")->count_all_results("env");
+    }
+    //博物馆基础数据-库房数量
+    public function count_storeroom(){
+        return $this->db['base']->where("type","库房")->count_all_results("env");
+    }
 
     //博物馆综合统计
     public function count_data_complex($date,$env_id){

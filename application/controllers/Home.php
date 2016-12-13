@@ -121,6 +121,8 @@ class Home extends CI_Controller {
 			$data_base['count_relic'] = $this->api->count_relic();
 			$data_base['count_precious_relic'] = $this->api->count_precious_relic();
 			$data_base['count_showcase'] = $this->api->count_showcase();
+			$date_base['count_hall'] = $this->api->count_hall();
+			$date_base['count_storeroom'] = $this->api->count_storeroom();
 			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_base')){
 				$this->db->where('mid', $this->museum['id'])->update('data_base', $data_base);
 			}else{

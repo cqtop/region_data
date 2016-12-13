@@ -96,19 +96,26 @@ class Mongo_api extends MY_library{
 
 
     //博物馆基础数据-馆藏文物数量
-    public function count_relic()
-    {
+    public function count_relic(){
         return $this->mongo_db->count("relic.base");
     }
     //博物馆基础数据-珍贵文物数量
-    public function count_precious_relic()
-    {
+    public function count_precious_relic(){
         return $this->mongo_db->where_in("level",array("一级","二级","三级"))->count("relic.base");
     }
     //博物馆基础数据-展柜数量
-    public function count_showcase()
-    {
+    public function count_showcase(){
         $showcase_id = $this->mongo_db->select(array("_id"))->where(array("name"=>"展柜"))->getOne("area.type");
+        return $this->mongo_db->where(array("type"=>$showcase_id['_id']))->count('area.base');
+    }
+    //博物馆基础数据-展厅数量
+    public function count_hall(){
+        $showcase_id = $this->mongo_db->select(array("_id"))->where(array("name"=>"展厅"))->getOne("area.type");
+        return $this->mongo_db->where(array("type"=>$showcase_id['_id']))->count('area.base');
+    }
+    //博物馆基础数据-库房数量
+    public function count_storeroom(){
+        $showcase_id = $this->mongo_db->select(array("_id"))->where(array("name"=>"库房"))->getOne("area.type");
         return $this->mongo_db->where(array("type"=>$showcase_id['_id']))->count('area.base');
     }
 
