@@ -2,16 +2,22 @@
 <html>
 <head>
 	<title>统计</title>
+	<link rel="stylesheet" type="text/css" href="./public/datepicker/jquery-ui.min.css">
 	<script type="text/javascript" src="./public/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="./public/datepicker/jquery-ui.min.js"></script>
 </head>
 <body>
-统计日志：
+
+统计日志:
 <select>
 	<?php foreach($month as $m):?>
 	<option value="<?php echo $m?>"><?php echo $m?></option>
 	<?php endforeach;?>
 </select>
-<input type="button" name="input_museum" value="博物馆统计">
+
+博物馆数据统计:
+<input type="text" id="datepicker">
+
 <hr>
 <pre></pre>
 
@@ -21,13 +27,16 @@
 		$.post('./', {month: $(this).val()}, function(data){
 			$("pre").html(data);
 		});
-	});
+	}).change();
 
-	$("[name=input_museum]").click(function(){
-		$.post('./home/countmusem', function(data){
+	$( "#datepicker").datepicker({
+		dateFormat: 'yy-mm-dd',
+		maxDate: '0D'
+	}).on("change", function() {
+		$.get('./home/countmusem/'+$(this).val(), function(data){
 			$("pre").html(data);
 		});
-	});
+    });
 </script>
 </body>
 </html>
