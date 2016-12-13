@@ -62,6 +62,8 @@ class Home extends CI_Controller {
 			lineMsg('博物馆基础数据统计完成');
 			$this->count_complex();
 			lineMsg('博物馆综合统计完成');
+			$this->data_complex_env();
+			lineMsg('博物馆综合统计(基于环境)统计完成');
 			$this->data_envtype_param();
 			lineMsg('环境类型参数综合统计完成');
 			$this->db->trans_commit();
@@ -74,6 +76,36 @@ class Home extends CI_Controller {
 		lineMsg('+++ memory peak:'.number_format(memory_get_peak_usage()));
 	}
 
+	//博物馆综合统计(基于环境)统计
+	public function data_complex_env(){
+		try{
+			foreach(array("yesterday","week","month") as $date){
+				foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
+					$result = $this->api->count_data_complex_env($date,$k);
+					if(!$result) continue;
+					foreach($result as $data){
+						$old_datas = $this->db
+								->select("id")
+								->where("date",$data['date'])
+								->where("env_type",$v)
+								->where("env_no",$data['env_no'])
+								->where("mid",$this->museum['id'])
+								->get("data_complex_env")
+								->result_array();
+						if($old_datas) {
+							$this->db
+									->where("id",$old_datas[0]['id'])
+									->update('data_complex_env', $data);
+						}else{
+							$this->db->insert("data_complex_env",$data);
+						}
+					}
+				}
+			}
+		}catch (Exception $e){
+			throw new Exception("博物馆综合统计(基于环境)统计失败！");
+		}
+	}
 
 	public function data_envtype_param(){ //环境类型参数综合统计
 		try{
@@ -121,9 +153,9 @@ class Home extends CI_Controller {
 			$data_base = array();
 			$data_base['count_relic'] = $this->api->count_relic();
 			$data_base['count_precious_relic'] = $this->api->count_precious_relic();
-			$data_base['count_showcase'] = $this->api->count_showcase();
-			$date_base['count_hall'] = $this->api->count_hall();
-			$date_base['count_storeroom'] = $this->api->count_storeroom();
+			$data_base['count_cabinet'] = $this->api->count_cabinet();
+			$data_base['count_hall'] = $this->api->count_hall();
+			$data_base['count_storeroom'] = $this->api->count_storeroom();
 			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_base')){
 				$this->db->where('mid', $this->museum['id'])->update('data_base', $data_base);
 			}else{
