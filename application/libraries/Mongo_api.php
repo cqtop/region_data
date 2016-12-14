@@ -157,7 +157,7 @@ class Mongo_api extends MY_library{
         $datas = $this->mongo_db
             ->select(array("param"))
             ->where_between("receivetime",$this->btime,$this->etime)
-            ->where("areano",$env_no)
+            ->where(array("areano"=>$env_no))
             ->get("data.sensor.".$this->year);
         if(empty($datas)) return null;
         $list = array_column(array_column($datas,"param"),$type);//一维数据列表
@@ -191,7 +191,7 @@ class Mongo_api extends MY_library{
                     "exeendtime",
                     "pid"))
                 ->where_between("receivetime",$this->btime,$this->etime)
-                ->where("areano",$env_no)
+                ->where(array("areano"=>$env_no))
                 ->get("data.sensor.".$this->year);
             $normal = $abnormal = array();
             foreach($alldatas as $data){
