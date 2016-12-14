@@ -154,7 +154,7 @@ class Mysql_api extends MY_library{
             ->where("env_no",$env_no)
             ->get("data_sensor")
             ->result_array();
-        if(!$Arr) return null;
+        if(!$Arr) return 0;
         $list = array_column($Arr,$type);//转为一维
         $avg = array_sum($list)/count($list);//平均值
         if(!$avg) return 0;
@@ -243,9 +243,10 @@ class Mysql_api extends MY_library{
             ->get("data_sensor")
             ->result_array();
 
-        if(!$Arr) return null;
+        if(!$Arr) return 0;
         $list = array_column($Arr,$type);//转为一维
         $avg = array_sum($list)/count($list);//平均值
+        if(!$avg) return 0;
         $sd = $this->getStandardDeviation($avg,$list); //标准差
 
         return round($sd/$avg,4);//离散系数

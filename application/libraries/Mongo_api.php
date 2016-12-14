@@ -159,9 +159,9 @@ class Mongo_api extends MY_library{
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where(array("areano"=>$env_no))
             ->get("data.sensor.".$this->year);
-        if(empty($datas)) return null;
+        if(empty($datas)) return 0;
         $list = array_column(array_column($datas,"param"),$type);//一维数据列表
-        if(empty($list)) return null; //无对应环境参数数据
+        if(empty($list)) return 0; //无对应环境参数数据
         $avg = array_sum($list)/count($list);//平均值
         if(!$avg) return 0;
         $sd = $this->getStandardDeviation($avg,$list); //标准差
@@ -263,9 +263,9 @@ class Mongo_api extends MY_library{
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where_in("areano",$this->EnvNo[$env_id])
             ->get("data.sensor.".$this->year);
-        if(empty($datas)) return null;
+        if(empty($datas)) return 0;
         $list = array_column(array_column($datas,"param"),$type);//一维数据列表
-        if(empty($list)) return null; //无对应环境参数数据
+        if(empty($list)) return 0; //无对应环境参数数据
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
         if($avg) return round($sd/$avg,4);
