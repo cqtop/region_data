@@ -9,11 +9,41 @@ class Home extends CI_Controller {
 		parent::__construct();
 		//$this->date = "2016-11-15";
 	}
+
+
+	// 主页 日志
+	public function index(){
+		if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=='XMLHttpRequest'){
+			$month = $this->input->post('month');
+			$file = "./logs/{$month}.log";
+			if(file_exists($file)){
+				echo file_get_contents($file);
+			}else{
+				echo '文件未找到';
+			}
+		}else{
+			$month = array();
+			if ($handle = opendir('./logs')) {
+			    while (false !== ($file = readdir($handle))) {
+			        if(preg_match("/^(\d{6})\.log$/", $file, $matches)){
+			        	array_push($month, $matches[1]);
+			        }
+			    }
+			    closedir($handle);
+			}
+
+			sort($month);
+			$data['month'] = array_reverse($month);
+			$this->load->view('home', $data);
+		}
+	}
+
+
 	/**
 	 * @param $no 序号（第几个博物馆）
 	 * @param $date 日期（某天的数据）
 	 */
-	public function index($no=0,$date=''){
+	public function count($no=0,$date=''){
 		$this->date = $date;
 		lineMsg(PHP_EOL.'============== '.($date?$date:date('Y-m-d', strtotime('yesterday'))).' ========');
 		lineMsg('+++ start memory:'.number_format(memory_get_usage()));
@@ -23,7 +53,7 @@ class Home extends CI_Controller {
 		}
 		// 初始化数据库
 		$this->initdb();
-		lineMsg('开始统计:'.$this->museum['name']);
+		lineMsg('开始统计:【'.$this->museum['name'].'】');
 		// 事务
 		$this->db->trans_begin();
 		try{
@@ -32,6 +62,8 @@ class Home extends CI_Controller {
 			lineMsg('博物馆基础数据统计完成');
 			$this->count_complex();
 			lineMsg('博物馆综合统计完成');
+			$this->data_complex_env();
+			lineMsg('博物馆综合统计(基于环境)统计完成');
 			$this->data_envtype_param();
 			lineMsg('环境类型参数综合统计完成');
 			$this->db->trans_commit();
@@ -43,6 +75,38 @@ class Home extends CI_Controller {
 		lineMsg('+++ end memory:'.number_format(memory_get_usage()));
 		lineMsg('+++ memory peak:'.number_format(memory_get_peak_usage()));
 	}
+
+	//博物馆综合统计(基于环境)统计
+	public function data_complex_env(){
+		try{
+			foreach(array("yesterday","week","month") as $date){
+				foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
+					$result = $this->api->count_data_complex_env($date,$k);
+					if(!$result) continue;
+					foreach($result as $data){
+						$old_datas = $this->db
+								->select("id")
+								->where("date",$data['date'])
+								->where("env_type",$v)
+								->where("env_no",$data['env_no'])
+								->where("mid",$this->museum['id'])
+								->get("data_complex_env")
+								->result_array();
+						if($old_datas) {
+							$this->db
+									->where("id",$old_datas[0]['id'])
+									->update('data_complex_env', $data);
+						}else{
+							$this->db->insert("data_complex_env",$data);
+						}
+					}
+				}
+			}
+		}catch (Exception $e){
+			throw new Exception("博物馆综合统计(基于环境)统计失败！");
+		}
+	}
+
 	public function data_envtype_param(){ //环境类型参数综合统计
 		try{
 			$datas = $this->api->data_envtype_param();
@@ -89,7 +153,9 @@ class Home extends CI_Controller {
 			$data_base = array();
 			$data_base['count_relic'] = $this->api->count_relic();
 			$data_base['count_precious_relic'] = $this->api->count_precious_relic();
-			$data_base['count_showcase'] = $this->api->count_showcase();
+			$data_base['count_cabinet'] = $this->api->count_cabinet();
+			$data_base['count_hall'] = $this->api->count_hall();
+			$data_base['count_storeroom'] = $this->api->count_storeroom();
 			if($this->db->where('mid', $this->museum['id'])->count_all_results('data_base')){
 				$this->db->where('mid', $this->museum['id'])->update('data_base', $data_base);
 			}else{
@@ -170,7 +236,7 @@ class Home extends CI_Controller {
 
 
 	// 统计
-	public function countdata($date=''){
+	public function countmusem($date=''){
 		$this->date = $date?$date:date('Y-m-d', strtotime('yesterday'));
 		echo '====== '.$this->date.' ======<br>';
 
@@ -181,9 +247,9 @@ class Home extends CI_Controller {
 			$this->initdb();
 			unset($this->api);
 			$this->load->library($m['db_type']."_api", array('db'=>$this->subdb,'mid'=>$m['id'],'date'=>$this->date),"api");
-			$countdata = $this->api->countdata();
-			echo 'count_day: '.number_format($countdata['count_day']).'<br>';
-			echo 'count_month: '.number_format($countdata['count_month']).'<br>';
+			$data = $this->api->countmusem();
+			echo 'count_day: '.number_format($data['count_day']).'<br>';
+			echo 'count_month: '.number_format($data['count_month']).'<br>';
 		}
 
 	}
