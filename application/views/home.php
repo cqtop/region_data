@@ -16,7 +16,7 @@
 </select>
 
 博物馆数据统计:
-<input type="text" id="datepicker">
+<input type="text" id="datepicker" placeholder="选择日期">
 
 <hr>
 <pre></pre>
