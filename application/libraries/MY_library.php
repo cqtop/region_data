@@ -61,6 +61,7 @@ class MY_library{
         }
         $standard = sizeof($arr)?sqrt($sum/sizeof($arr)):0;//标准差
         asort($arr);
+        $arr = array_values($arr);
         if(sizeof($arr)%2 == 0){ //中位值
             $end = intval(sizeof($arr)/2);
             $flag = $arr[$end-1] + $arr[$end];
