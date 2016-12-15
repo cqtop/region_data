@@ -488,6 +488,17 @@ class Mongo_api extends MY_library{
         $data = array();
         $data['count_day'] = $this->mongo_db->where_between("receivetime", $daytime, $daytime+86400)->count("data.sensor.".$this->year);
         $data['count_month'] = $this->mongo_db->where_between("receivetime", $monthtime1, $monthtime2)->count("data.sensor.".$this->year);
+
+        // 环境统计
+        foreach(array('show_cabinet', 'hall', 'storage') as $type){
+            $at = $this->mongo_db->where(array("id"=>$type))->getOne("area.type");
+            if($at){
+                $data[$type] = $this->mongo_db->where(array("type"=>$at['_id']))->count("area.base");
+            }else{
+                $data[$type] = 0;
+            }
+        }
+        
         return $data;
     }
 

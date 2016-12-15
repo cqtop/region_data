@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50620
 File Encoding         : 65001
 
-Date: 2016-12-09 10:30:02
+Date: 2016-12-14 16:24:14
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -31,98 +31,12 @@ CREATE TABLE `config` (
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='系统设置';
 
 -- ----------------------------
--- Table structure for data_abnormal
+-- Records of config
 -- ----------------------------
-DROP TABLE IF EXISTS `data_abnormal`;
-CREATE TABLE `data_abnormal` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` varchar(10) NOT NULL COMMENT '日期D/周W/月M',
-  `mid` int(10) NOT NULL COMMENT '博物馆ID',
-  `depid` int(10) NOT NULL COMMENT '环境类型参数综合统计ID',
-  `equip_no` varchar(50) DEFAULT NULL COMMENT '设备编号',
-  `val` varchar(20) DEFAULT NULL COMMENT '数据值',
-  `time` varchar(10) DEFAULT NULL COMMENT '时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=275974 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 数据异常值列表（环境类型参数综合统计扩展表）';
-
--- ----------------------------
--- Table structure for data_base
--- ----------------------------
-DROP TABLE IF EXISTS `data_base`;
-CREATE TABLE `data_base` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `mid` int(10) NOT NULL COMMENT '博物馆ID',
-  `count_relic` int(5) DEFAULT NULL COMMENT '馆藏文物数量',
-  `count_precious_relic` int(5) DEFAULT NULL COMMENT '珍贵文物数量',
-  `count_fixed_exhibition` int(5) DEFAULT NULL COMMENT '固定展览数量',
-  `count_temporary_exhibition` int(5) DEFAULT NULL COMMENT '临时展览数量',
-  `count_showcase` int(5) DEFAULT NULL COMMENT '展柜数量',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 博物馆基础数据';
-
--- ----------------------------
--- Table structure for data_complex
--- ----------------------------
-DROP TABLE IF EXISTS `data_complex`;
-CREATE TABLE `data_complex` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` varchar(10) NOT NULL COMMENT '日期D/周W/月M',
-  `mid` int(10) NOT NULL COMMENT '博物馆ID',
-  `env_type` varchar(20) NOT NULL COMMENT '环境类型',
-  `scatter_temperature` float(4,3) DEFAULT NULL COMMENT '温度离散系数',
-  `scatter_humidity` float(4,3) DEFAULT NULL COMMENT '湿度离散系数',
-  `scatter_light` float(4,3) DEFAULT NULL COMMENT '光照离散系数',
-  `scatter_uv` float(4,3) DEFAULT NULL COMMENT '紫外离散系数',
-  `scatter_voc` float(4,3) DEFAULT NULL COMMENT 'VOC离散系数',
-  `temperature_total` int(5) DEFAULT NULL COMMENT '温度数据总数',
-  `temperature_abnormal` int(5) DEFAULT NULL COMMENT '温度未达标数',
-  `humidity_total` int(5) DEFAULT NULL COMMENT '湿度数据总数',
-  `humidity_abnormal` int(5) DEFAULT NULL COMMENT '湿度未达标数',
-  `light_total` int(5) DEFAULT NULL COMMENT '光照数据总数',
-  `light_abnormal` int(5) DEFAULT NULL COMMENT '光照未达标数',
-  `uv_total` int(5) DEFAULT NULL COMMENT '紫外数据总数',
-  `uv_abnormal` int(5) DEFAULT NULL COMMENT '紫外未达标数',
-  `voc_total` int(5) DEFAULT NULL COMMENT 'VOC数据总数',
-  `voc_abnormal` int(5) DEFAULT NULL COMMENT 'VOC未达标数',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=832 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 博物馆综合统计';
-
--- ----------------------------
--- Table structure for data_envtype_param
--- ----------------------------
-DROP TABLE IF EXISTS `data_envtype_param`;
-CREATE TABLE `data_envtype_param` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` varchar(10) NOT NULL COMMENT '日期D/周W/月M',
-  `mid` int(10) NOT NULL COMMENT '博物馆ID',
-  `env_type` varchar(20) DEFAULT NULL COMMENT '环境类型',
-  `param` varchar(20) DEFAULT NULL COMMENT '参数名称（湿度、光照要分材质）',
-  `max` float(5,2) DEFAULT NULL COMMENT '最大值',
-  `min` float(5,2) DEFAULT NULL COMMENT '最小值',
-  `wave` varchar(100) DEFAULT NULL COMMENT '日波动（min,max,min2,max2）',
-  `wave_status` int(5) DEFAULT NULL COMMENT '日波动超标状态（1111：min|max|min2|max2）',
-  `middle` float(5,2) DEFAULT NULL COMMENT '中位值',
-  `average` float(5,2) DEFAULT NULL COMMENT '平均值（剔除异常值）',
-  `count_abnormal` int(5) DEFAULT NULL COMMENT '异常值个数',
-  `standard` float(5,2) DEFAULT NULL COMMENT '标准差',
-  `compliance` float(5,2) DEFAULT NULL COMMENT '达标率',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1695 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境类型参数综合统计';
-
--- ----------------------------
--- Table structure for data_wave_abnormal
--- ----------------------------
-DROP TABLE IF EXISTS `data_wave_abnormal`;
-CREATE TABLE `data_wave_abnormal` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `date` varchar(10) NOT NULL COMMENT '日期D/周W/月M',
-  `mid` int(10) NOT NULL COMMENT '博物馆ID',
-  `depid` int(10) NOT NULL COMMENT '环境类型参数综合统计ID',
-  `type` int(2) DEFAULT NULL COMMENT '是否剔除异常值：1是 0否',
-  `env_name` varchar(50) DEFAULT NULL COMMENT '环境名称',
-  `val` varchar(20) DEFAULT NULL COMMENT '波动值',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10330 DEFAULT CHARSET=utf8 COMMENT='数据统计 - 环境日波动异常表（环境类型参数综合统计扩展表）';
+INSERT INTO `config` VALUES ('1', 'app_name', '四川省区域中心综合管理平台', null, null, null);
+INSERT INTO `config` VALUES ('2', 'region_no', 'R61007200', null, null, null);
+INSERT INTO `config` VALUES ('3', 'region_name', '四川省博物院', null, null, null);
+INSERT INTO `config` VALUES ('4', 'map_name', 'sichuan', null, null, null);
 
 -- ----------------------------
 -- Table structure for log
@@ -136,6 +50,10 @@ CREATE TABLE `log` (
   `content` text COMMENT '记录内容',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='日志表';
+
+-- ----------------------------
+-- Records of log
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for logs
@@ -155,6 +73,10 @@ CREATE TABLE `logs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='api访问日志';
 
 -- ----------------------------
+-- Records of logs
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for museum
 -- ----------------------------
 DROP TABLE IF EXISTS `museum`;
@@ -169,7 +91,20 @@ CREATE TABLE `museum` (
   `longitude` float(6,2) DEFAULT NULL COMMENT '经度',
   `latitude` float(6,2) DEFAULT NULL COMMENT '纬度',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COMMENT='博物馆列表';
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COMMENT='博物馆列表';
+
+-- ----------------------------
+-- Records of museum
+-- ----------------------------
+INSERT INTO `museum` VALUES ('1', '金沙博物馆金沙博物馆金沙博物馆金沙博物馆金沙博物馆', 'Mysql', '192.168.8.11', 'root', 'mysql', 'jinsha', '104.02', '30.69');
+INSERT INTO `museum` VALUES ('2', '四川博物院（洛阳）', 'Mysql', '192.168.8.11', 'root', 'mysql', 'luoyang', '102.04', '30.66');
+INSERT INTO `museum` VALUES ('3', '雅安博物馆', 'Mongo', '192.168.8.11', null, null, 'museum_ya', '103.00', '30.00');
+INSERT INTO `museum` VALUES ('4', '成都博物馆（智联）', 'Mongo', '192.168.8.11', '', '', 'museum_test', '103.07', '30.66');
+INSERT INTO `museum` VALUES ('5', '泸州博物馆', 'Mysql', null, null, null, null, '105.44', '28.88');
+INSERT INTO `museum` VALUES ('6', '5.12汶川特大地震纪念馆', null, null, null, null, null, '103.49', '31.06');
+INSERT INTO `museum` VALUES ('7', 'test1', null, null, null, null, null, '0.00', '0.00');
+INSERT INTO `museum` VALUES ('8', 'test2', 'Mongo', null, null, null, null, '0.00', '0.00');
+INSERT INTO `museum` VALUES ('9', 'tesr3', null, null, null, null, null, '0.00', '0.00');
 
 -- ----------------------------
 -- Table structure for permission
@@ -186,6 +121,18 @@ CREATE TABLE `permission` (
 ) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COMMENT='权限表';
 
 -- ----------------------------
+-- Records of permission
+-- ----------------------------
+INSERT INTO `permission` VALUES ('1', '环境监测', '环境监测', '页面', 'base', '1');
+INSERT INTO `permission` VALUES ('2', '系统管理', '系统管理', '页面', 'base', '2');
+INSERT INTO `permission` VALUES ('3', '查询用户列表', '查询用户列表', '用户', 'base', '99');
+INSERT INTO `permission` VALUES ('4', '获取单个用户基本信息', '获取单个用户基本信息', '用户', 'base', '90');
+INSERT INTO `permission` VALUES ('5', '添加用户', '添加用户', '用户', 'base', null);
+INSERT INTO `permission` VALUES ('6', '修改用户', '修改用户', '用户', 'base', null);
+INSERT INTO `permission` VALUES ('7', '删除用户', '删除用户', '用户', 'base', null);
+INSERT INTO `permission` VALUES ('8', '获取角色列表', '获取角色列表', '角色', 'base', null);
+
+-- ----------------------------
 -- Table structure for role
 -- ----------------------------
 DROP TABLE IF EXISTS `role`;
@@ -198,6 +145,14 @@ CREATE TABLE `role` (
   `sort` int(11) DEFAULT NULL COMMENT '排序',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='角色表';
+
+-- ----------------------------
+-- Records of role
+-- ----------------------------
+INSERT INTO `role` VALUES ('1', '0', '管理员', '环境监测,系统管理', null, '999');
+INSERT INTO `role` VALUES ('2', '0', '领导', '环境监测,系统管理,查询用户列表', null, '888');
+INSERT INTO `role` VALUES ('3', '0', 'test', '环境监测,系统管理', '1222', '777');
+INSERT INTO `role` VALUES ('4', '3', 'test', '环境监测,系统管理', '1222', '777');
 
 -- ----------------------------
 -- Table structure for tokens
@@ -213,7 +168,20 @@ CREATE TABLE `tokens` (
   `user` text COMMENT '绑定用户json,包含用户及权限信息',
   PRIMARY KEY (`id`),
   UNIQUE KEY `token` (`token`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=192 DEFAULT CHARSET=utf8 COMMENT='token身份认证';
+) ENGINE=InnoDB AUTO_INCREMENT=246 DEFAULT CHARSET=utf8 COMMENT='token身份认证';
+
+-- ----------------------------
+-- Records of tokens
+-- ----------------------------
+INSERT INTO `tokens` VALUES ('235', 'base_UmcyVmFqM2FvUHFRTndHVjBDS0NmQ2xwZkt4eEgvcEY0TStKZTM4UTlyU0JSMEZrVUxLL2JnPT0=', '1', '192.168.8.91', '1481677958', '1481703344', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"real_name\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"192.168.8.91\"}');
+INSERT INTO `tokens` VALUES ('236', 'base_eVB1U29aSjQvcS9qaERjcHV0WWdzd0lFZzRVN3pReVkwVWJ3clVscVVhdC8wcEJlcy9EOTBRPT0=', '1', '192.168.8.219', '1481678337', '1481700640', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"real_name\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"192.168.8.219\"}');
+INSERT INTO `tokens` VALUES ('237', 'base_aSszejE1MU1JblF4d3JKbXQxVjVadWRzcHdWS2RKbXZzK1A0LzR2cnVOM29wcmVEWi9XNDlRPT0=', '1', '::1', '1481679192', '1481681045', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"超级管理员\",\"real_name\":\"超级管理员\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"::1\"}');
+INSERT INTO `tokens` VALUES ('238', 'base_TGtqUTNXQi9IaldQaWdheEdLUDZCYnl3ck5kM0V4MHZzMzFLOWZCbkhVWlJTeDJqSVVNSWdnPT0=', '1', '127.0.0.1', '1481679545', '1481685587', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"超级管理员\",\"real_name\":\"超级管理员\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"127.0.0.1\"}');
+INSERT INTO `tokens` VALUES ('239', 'base_UWM0UVg2aXlzTTFaMll6L1FaOFcwRXZhckQxWWFLY21OeXMyZFN2bUpJbzR3cmNXdmx3Z0x3PT0=', '1', '192.168.8.215', '1481680621', '1481681120', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"real_name\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"192.168.8.215\"}');
+INSERT INTO `tokens` VALUES ('240', 'base_U2lCejUxUktVeFZjWjFSOHBlbldmRUNud0dzWjBkcittem5nSG9pRHhrczV3Z1pYS3hiQmJ3PT0=', '1', '192.168.8.152', '1481681348', '1481682343', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"real_name\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"192.168.8.152\"}');
+INSERT INTO `tokens` VALUES ('242', 'base_eXlVaUV1N2hOU0M3eWxYdENUUjhOaVk5aENXeC9rc3k3bzU1bDB1ZXlReWpXRnFOajVCcTh3PT0=', '1', '192.168.8.152', '1481684706', '1481684706', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"real_name\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"192.168.8.152\"}');
+INSERT INTO `tokens` VALUES ('243', 'base_alJSVG42U1FUUUlwbUZGcisyWVhFQk0xMGtwbVBQTVAzQzRvUkNxdHhNeFVVYnBVNS9xdDdBPT0=', '1', '192.168.8.152', '1481684729', '1481684809', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"real_name\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"192.168.8.152\"}');
+INSERT INTO `tokens` VALUES ('244', 'base_enlYVS82RGxldFNWT1NGUVlXWkVKbjBhbjRHbmxaWkJqbXFaZG1wdUF4dm9wcmVEWi9XNDlRPT0=', '1', '192.168.8.152', '1481684730', '1481684731', '{\"id\":\"1\",\"username\":\"admin\",\"level\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"real_name\":\"\\u8d85\\u7ea7\\u7ba1\\u7406\\u5458\",\"permissions\":\"administrator\",\"data_scope\":\"\",\"ip\":\"192.168.8.152\"}');
 
 -- ----------------------------
 -- Table structure for user
@@ -237,6 +205,13 @@ CREATE TABLE `user` (
 ) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COMMENT='用户表';
 
 -- ----------------------------
+-- Records of user
+-- ----------------------------
+INSERT INTO `user` VALUES ('1', 'admin', 'f6fdffe48c908deb0f4c3bd36c032e72', '1,2', '正常', '超级管理员', '超级管理员', '18716435779', null, null, '1', '{\"bg\":[\"ds\",\"dss\",\"dds\",\"rr\"],\"music\":\"\\u6d6e\\u5938\",\"search\":{\"history\":[\"fd\",\"type\",\"sd\"]}}');
+INSERT INTO `user` VALUES ('2', 'test', '05a671c66aefea124cc08b76ea6d30bb', '1', '锁定', '测试', '测试', '15555555', null, null, null, null);
+INSERT INTO `user` VALUES ('3', 'admins', '1df07bcb21e91dd29ac01c91680ea349', '1,2', '正常', '工作人员', '刘丹', null, null, null, '1', null);
+
+-- ----------------------------
 -- Table structure for user_behavior
 -- ----------------------------
 DROP TABLE IF EXISTS `user_behavior`;
@@ -246,6 +221,12 @@ CREATE TABLE `user_behavior` (
   `behavior` text COMMENT '行为记录（json）',
   PRIMARY KEY (`uid`,`webkey`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户行为记录表';
+
+-- ----------------------------
+-- Records of user_behavior
+-- ----------------------------
+INSERT INTO `user_behavior` VALUES ('1', 'test', '1,2,3');
+INSERT INTO `user_behavior` VALUES ('1', 'test1', '1,2,3,sdfdf');
 
 -- ----------------------------
 -- Table structure for user_ip
@@ -264,6 +245,10 @@ CREATE TABLE `user_ip` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='用户登陆ip表';
 
 -- ----------------------------
+-- Records of user_ip
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for user_login
 -- ----------------------------
 DROP TABLE IF EXISTS `user_login`;
@@ -277,3 +262,23 @@ CREATE TABLE `user_login` (
   `code` varchar(10) DEFAULT NULL COMMENT '短信验证码',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=17 DEFAULT CHARSET=utf8 COMMENT='用户登录记录';
+
+-- ----------------------------
+-- Records of user_login
+-- ----------------------------
+INSERT INTO `user_login` VALUES ('1', '1', '1478848642', null, null, null, null);
+INSERT INTO `user_login` VALUES ('2', '1', '1479106474', null, null, null, null);
+INSERT INTO `user_login` VALUES ('3', '1', '1479173622', null, null, null, null);
+INSERT INTO `user_login` VALUES ('4', '1', '1479277922', null, null, null, null);
+INSERT INTO `user_login` VALUES ('5', '1', '1479437877', null, null, null, null);
+INSERT INTO `user_login` VALUES ('6', '1', '1479698002', null, null, null, null);
+INSERT INTO `user_login` VALUES ('7', '1', '1479779293', null, null, null, null);
+INSERT INTO `user_login` VALUES ('8', '1', '1479879846', null, null, null, null);
+INSERT INTO `user_login` VALUES ('9', '1', '1479962998', null, null, null, null);
+INSERT INTO `user_login` VALUES ('10', '1', '1480037882', null, null, null, null);
+INSERT INTO `user_login` VALUES ('11', '1', '1480295287', null, null, null, null);
+INSERT INTO `user_login` VALUES ('12', '3', '1480296141', null, null, null, null);
+INSERT INTO `user_login` VALUES ('13', '1', '1480381925', null, null, null, null);
+INSERT INTO `user_login` VALUES ('14', '1', '1480467949', null, null, null, null);
+INSERT INTO `user_login` VALUES ('15', '1', '1480641975', null, null, null, null);
+INSERT INTO `user_login` VALUES ('16', '1', '1482040738', null, null, null, null);
