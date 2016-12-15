@@ -251,7 +251,8 @@ class Mongo_api extends MY_library{
     private function getData($area_no,$start,$end){
         $data = $this->mongo_db->select(array("alerts","param","areano","equip_id","receivetime")) //展厅，算全部参数
         ->where_in("areano",$area_no)
-            ->where_between("receivetime", $start, $end)
+            ->where_gte("receivetime", $start)
+            ->where_lt("receivetime",$end )
             ->get("data.sensor.".$this->year);
         return $data;
     }
@@ -332,7 +333,7 @@ class Mongo_api extends MY_library{
 
                     if (array_key_exists("alerts",$value) && !empty($value["alerts"])){
                         foreach ($value["alerts"] as $v){
-                            if(array_key_exists("parameter",$v) && $v["parameter"] == $k1){
+                            if(is_array($v) && array_key_exists("parameter",$v) && $v["parameter"] == $k1){
                                 $alert ++;
                             }
                         }
