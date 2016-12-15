@@ -188,8 +188,7 @@ class Mongo_api extends MY_library{
             $param_list = array_column($param_arr,$param);
             if(empty($param_list)) {
                 $ret['scatter_'.$param] = 0;
-            }
-            else {
+            }else{
                 $avg = array_sum($param_list)/count($param_list);//平均值
                 if(!$avg) {
                     $ret['scatter_'.$param] = 0;
