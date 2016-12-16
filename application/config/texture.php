@@ -28,3 +28,13 @@ $config["texture"] = array(
         11 => array("light"=>array())
     )
 );
+
+$config["material"] = array(
+    "石质"=>array("石"),
+    "陶器"=>array("陶","砖瓦"),
+    "瓷器"=>array("瓷"),
+    "铁质"=>array("铁"),
+    "青铜"=>array("铜"),
+    "纸质"=>array("纸"),
+    "纺织品"=>array("丝","棉麻纤维")
+);

@@ -19,6 +19,7 @@ class MY_library{
     protected $storeroom = array();
     protected $env_names = array();
     protected $texture = null;
+    protected $material = null;
     protected $areas = null;
     protected $museum_id = null;
     protected $day = false;
@@ -29,6 +30,7 @@ class MY_library{
         $this->CI = & get_instance();
         $this->CI->load->config("texture");
         $this->texture = config_item("texture");
+        $this->material = config_item("material");
         $this->areas = array();
     }
 

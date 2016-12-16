@@ -50,14 +50,20 @@ class Mongo_api extends MY_library{
 
             $data = array();
             //根据文物找材质类型
-            $relic = $this->mongo_db->select(array("type"))->where(array("place"=>$v["_id"]))->get("relic.base");
-
+            $relic = $this->mongo_db->select(array("material"))->where(array("place"=>$v["_id"]))->get("relic.base");
+            //$this->material
             foreach ($relic as $r){
-                if($r["type"]){
+                if($r["material"]){
+                    foreach ($this->material as $material => $value){
+                        if(in_array($r["material"],$value)){
+                            $r["material"] = $material;
+                            break;
+                        }
+                    }
                     foreach ($texture as $k => $t){
                         foreach ($t as $k1 => $t1){
                             if(!empty($t1)){
-                                if(in_array($r["type"],$t1)){
+                                if(in_array($r["material"],$t1)){
                                     $data["material_".$k1][] = $k;
                                 }
                             }
