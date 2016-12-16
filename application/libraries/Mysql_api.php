@@ -480,6 +480,16 @@ class Mysql_api extends MY_library{
         $data = array();
         $data['count_day'] = $this->db["env"]->where("equip_time > ", $daytime)->where("equip_time < ", $daytime+86400)->count_all_results("data_sensor");
         $data['count_month'] = $this->db["env"]->where("equip_time > ", $monthtime1)->where("equip_time < ", $monthtime2)->count_all_results("data_sensor");
+
+        //环境统计
+        $sql = "SELECT type, COUNT(*) AS c FROM env GROUP BY type";
+        $env = $this->db['base']->query($sql)->result_array();
+        $env = array_column($env, 'c', 'type');
+        $areatype = array('show_cabinet'=>'展柜', 'hall'=>'展厅', 'storage'=>'库房');
+        foreach ($areatype as $t=>$n) {
+            $data[$t] = isset($env[$n]) ? $env[$n] : 0;
+        }
+        
         return $data;
     }
 

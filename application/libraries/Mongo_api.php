@@ -132,100 +132,113 @@ class Mongo_api extends MY_library{
         $data = array();
         if(!$this->EnvNo[$env_id]) return false; //不存在对应的环境类型(hall/cabinet/storeroom)
         foreach($this->EnvNo[$env_id] as $env_no){ //遍历对应环境类型的环境编号
-            $data[] = array(
+            $ret = $this->count_scatter_env_all($date,$env_no);
+            $base = array(
                 "date"=>$this->date_str,
                 "env_no"=>$env_no,
                 "env_type"=>$env_type[$env_id],
                 "mid"=>$this->museum_id,
-                "scatter_temperature"=>$this->count_scatter_env($env_no,"temperature"),
-                "scatter_humidity"=>$this->count_scatter_env($env_no,"humidity"),
-                "scatter_light"=>$this->count_scatter_env($env_no,"light"),
-                "scatter_uv"=>$this->count_scatter_env($env_no,"uv"),
-                "scatter_voc"=>$this->count_scatter_env($env_no,"voc"),
-                "temperature_total"=>$this->count_number($date,"temperature","total",$env_no),
-                "temperature_abnormal"=>$this->count_number($date,"temperature","abnormal",$env_no),
-                "humidity_total"=>$this->count_number($date,"humidity","total",$env_no),
-                "humidity_abnormal"=>$this->count_number($date,"humidity","abnormal",$env_no),
-                "light_total"=>$this->count_number($date,"light","total",$env_no),
-                "light_abnormal"=>$this->count_number($date,"light","abnormal",$env_no),
-                "uv_total"=>$this->count_number($date,"uv","total",$env_no),
-                "uv_abnormal"=>$this->count_number($date,"uv","abnormal",$env_no),
-                "voc_total"=>$this->count_number($date,"voc","total",$env_no),
-                "voc_abnormal"=>$this->count_number($date,"voc","abnormal",$env_no),
             );
+            $data[] = array_merge($base,$ret);
         }
 
         return $data;
     }
-
-    //博物馆综合统计-离散系数-基于单个环境编号
-    public function count_scatter_env($env_no,$type){
+    //博物馆综合统计-离散系数&参数达标个数-基于环境-所有参数一起统计
+    public function count_scatter_env_all($date,$env_no){
+        $ret = array();
+        $env_param = array("temperature","humidity","light","uv","voc");
         $datas = $this->mongo_db
-            ->select(array("param"))
+            ->select(array(),array(
+                "_id",
+                "voltage",
+                "instruct",
+                "version",
+                "sensorno",
+                "sendidtip",
+                "ip",
+                "time",
+                "size",
+                "socketstr",
+                "parsertime",
+                "rssi",
+                "exestarttime",
+                "equip_id",
+                "relicno",
+                "exeendtime",
+                "pid"))
             ->where_between("receivetime",$this->btime,$this->etime)
             ->where(array("areano"=>$env_no))
             ->get("data.sensor.".$this->year);
-        if(empty($datas)) return 0;
-        $list = array_column(array_column($datas,"param"),$type);//一维数据列表
-        if(empty($list)) return 0; //无对应环境参数数据
-        $avg = array_sum($list)/count($list);//平均值
-        if(!$avg) return 0;
-        $sd = $this->getStandardDeviation($avg,$list); //标准差
-        return round($sd/$avg,4);
-    }
-
-    //博物馆综合统计-数据达标和未达标数量统计-基于环境
-    public function count_number($date,$param,$type,$env_no){
-        if($date == "yesterday"){//天统计-计算原始表
-            $alldatas =  $this->mongo_db
-                ->select(array(),array(
-                    "_id",
-                    "voltage",
-                    "instruct",
-                    "version",
-                    "sensorno",
-                    "sendidtip",
-                    "ip",
-                    "time",
-                    "size",
-                    "socketstr",
-                    "parsertime",
-                    "rssi",
-                    "exestarttime",
-                    "equip_id",
-                    "relicno",
-                    "exeendtime",
-                    "pid"))
-                ->where_between("receivetime",$this->btime,$this->etime)
-                ->where(array("areano"=>$env_no))
-                ->get("data.sensor.".$this->year);
-            $normal = $abnormal = array();
-            foreach($alldatas as $data){
-                if(isset($data['param'][$param])){ //存在参数数据
-                    if(isset($data['alerts'])){ //存在告警字段
-                        $alarm_list = array_column($data['alerts'],"parameter");
-                        if(in_array($param,$alarm_list)) $abnormal[] = $data['param'][$param]; //告警列表包含此参数
-                        else $normal[] = $data['param'][$param];
-                    }else{
-                        $normal[] = $data['param'][$param];
-                    }
+        if(empty($datas))
+            return array(
+                "scatter_temperature"=>0,
+                "scatter_humidity"=>0,
+                "scatter_light"=>0,
+                "scatter_uv"=>0,
+                "scatter_voc"=>0,
+                "temperature_total"=>0,
+                "temperature_abnormal"=>0,
+                "humidity_total"=>0,
+                "humidity_abnormal"=>0,
+                "light_total"=>0,
+                "light_abnormal"=>0,
+                "uv_total"=>0,
+                "uv_abnormal"=>0,
+                "voc_total"=>0,
+                "voc_abnormal"=>0
+            );
+        $param_arr = array_column($datas,"param");
+        foreach($env_param as $param){
+            //离散系数统计
+            $param_list = array_column($param_arr,$param);
+            if(empty($param_list)) {
+                $ret['scatter_'.$param] = 0;
+            }else{
+                $avg = array_sum($param_list)/count($param_list);//平均值
+                if(!$avg) {
+                    $ret['scatter_'.$param] = 0;
+                }else{
+                    $sd = $this->getStandardDeviation($avg,$param_list); //标准差
+                    $ret['scatter_'.$param] = round($sd/$avg,4);
                 }
             }
-            $ret["total"] = count($normal)+count($abnormal);
-            $ret["abnormal"] = count($abnormal);
-            return $ret[$type];
-        }else{ //周/月统计-累加统计表的天数据
-            $alldatas = $this->CI->db
-                ->select("SUM({$param}_{$type}) as number")
-                ->where("env_no",$env_no)
-                ->where("mid",$this->museum_id)
-                ->where_in("date",$this->_date_list($this->date_start,$this->date_end))
-                ->group_by("env_no")
-                ->get("data_complex_env")
-                ->result_array();
-            if(!$alldatas) return 0;
-            return $alldatas[0]['number'];
+            //达标个数统计(分天和周/月)
+            if($date=="yesterday"){//统计原始天数据
+                $normal = $abnormal = array();
+                foreach($datas as $data){
+                    if(isset($data['param'][$param])){ //存在参数数据
+                        if(isset($data['alerts'])){ //存在告警字段
+                            $alarm_list = array_column($data['alerts'],"parameter");
+                            if(in_array($param,$alarm_list)) $abnormal[] = $data['param'][$param]; //告警列表包含此参数
+                            else $normal[] = $data['param'][$param];
+                        }else{
+                            $normal[] = $data['param'][$param];
+                        }
+                    }
+                }
+                $ret[$param."_total"] = count($normal)+count($abnormal);
+                $ret[$param."_abnormal"] = count($abnormal);
+            }else{//累加统计表天数据
+                $alldatas = $this->CI->db
+                    ->select("SUM({$param}_total) as total,SUM({$param}_abnormal) as abnormal")
+                    ->where("env_no",$env_no)
+                    ->where("mid",$this->museum_id)
+                    ->where_in("date",$this->_date_list($this->date_start,$this->date_end))
+                    ->group_by("env_no")
+                    ->get("data_complex_env")
+                    ->result_array();
+                if(!$alldatas) {
+                    $ret[$param."_total"] = 0;
+                    $ret[$param."_abnormal"] = 0;
+                }else{
+                    $ret[$param."_total"] = $alldatas[0]['total'];
+                    $ret[$param."_abnormal"] = $alldatas[0]['abnormal'];
+                }
+            }
         }
+
+        return $ret;
     }
 
 
@@ -274,8 +287,9 @@ class Mongo_api extends MY_library{
         if(empty($list)) return 0; //无对应环境参数数据
         $avg = array_sum($list)/count($list);//平均值
         $sd = $this->getStandardDeviation($avg,$list); //标准差
-        if($avg) return round($sd/$avg,4);
-        return 0;
+        if(!$avg) return 0;
+        return round($sd/$avg,4);
+
     }
     //博物馆综合统计-各参数达标总和未达标总和-天数据
     public function count_total_abnormal($env_id){
@@ -479,6 +493,17 @@ class Mongo_api extends MY_library{
         $data = array();
         $data['count_day'] = $this->mongo_db->where_between("receivetime", $daytime, $daytime+86400)->count("data.sensor.".$this->year);
         $data['count_month'] = $this->mongo_db->where_between("receivetime", $monthtime1, $monthtime2)->count("data.sensor.".$this->year);
+
+        // 环境统计
+        foreach(array('show_cabinet', 'hall', 'storage') as $type){
+            $at = $this->mongo_db->where(array("id"=>$type))->getOne("area.type");
+            if($at){
+                $data[$type] = $this->mongo_db->where(array("type"=>$at['_id']))->count("area.base");
+            }else{
+                $data[$type] = 0;
+            }
+        }
+        
         return $data;
     }
 

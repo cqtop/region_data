@@ -242,6 +242,7 @@ class Home extends CI_Controller {
 
 		$museum = $this->db->get("museum")->result_array();
 		foreach ($museum as $m) {
+			if(empty($m['db_host'])) continue;
 			echo '+++ '.$m['name'].'<br>';
 			$this->museum = $m;
 			$this->initdb();
@@ -250,6 +251,10 @@ class Home extends CI_Controller {
 			$data = $this->api->countmusem();
 			echo 'count_day: '.number_format($data['count_day']).'<br>';
 			echo 'count_month: '.number_format($data['count_month']).'<br>';
+			echo '展厅: '.number_format($data['hall']).'， ';
+			echo '展柜: '.number_format($data['show_cabinet']).'， ';
+			echo '库房: '.number_format($data['storage']).'<br>';
+			echo '<br>';
 		}
 
 	}
