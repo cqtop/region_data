@@ -132,7 +132,7 @@ class Mongo_api extends MY_library{
         $data = array();
         if(!$this->EnvNo[$env_id]) return false; //不存在对应的环境类型(hall/cabinet/storeroom)
         foreach($this->EnvNo[$env_id] as $env_no){ //遍历对应环境类型的环境编号
-            $ret = $this->count_scatter_env_all($date,$env_no);
+            $ret = $this->count_complex_env_all($date,$env_no);
             $base = array(
                 "date"=>$this->date_str,
                 "env_no"=>$env_no,
@@ -145,7 +145,7 @@ class Mongo_api extends MY_library{
         return $data;
     }
     //博物馆综合统计-离散系数&参数达标个数-基于环境-所有参数一起统计
-    public function count_scatter_env_all($date,$env_no){
+    public function count_complex_env_all($date,$env_no){
         $ret = array();
         $env_param = array("temperature","humidity","light","uv","voc");
         $datas = $this->mongo_db

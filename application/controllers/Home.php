@@ -84,8 +84,7 @@ class Home extends CI_Controller {
 					$result = $this->api->count_data_complex_env($date,$k);
 					if(!$result) continue;
 					foreach($result as $data){
-						$old_datas = $this->db
-								->select("id")
+						$old_datas = $this->db->select("id")
 								->where("date",$data['date'])
 								->where("env_type",$v)
 								->where("env_no",$data['env_no'])
@@ -93,9 +92,7 @@ class Home extends CI_Controller {
 								->get("data_complex_env")
 								->result_array();
 						if($old_datas) {
-							$this->db
-									->where("id",$old_datas[0]['id'])
-									->update('data_complex_env', $data);
+							$this->db->where("id",$old_datas[0]['id'])->update('data_complex_env', $data);
 						}else{
 							$this->db->insert("data_complex_env",$data);
 						}
@@ -173,17 +170,14 @@ class Home extends CI_Controller {
 				foreach(array(1=>"展厅", 2=>"展柜", 3=>"库房") as $k=>$v){
 					$result = $this->api->count_data_complex($date,$k);
 					if(!$result) continue;
-					$old_datas = $this->db
-						->where("date",$result['date'])
-						->where("env_type",$v)
-						->where("mid",$this->museum['id'])
-						->get("data_complex")
-						->result_array();
-					if($old_datas) {
-						$this->db->where('date',$result['date'])
+					$old_datas = $this->db->select("id")
+							->where("date",$result['date'])
 							->where("env_type",$v)
 							->where("mid",$this->museum['id'])
-							->update('data_complex', $result);
+							->get("data_complex")
+							->result_array();
+					if($old_datas) {
+						$this->db->where('id',$old_datas[0]['id'])->update('data_complex', $result);
 					}else{
 						$this->db->insert("data_complex",$result);
 					}
