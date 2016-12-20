@@ -412,27 +412,27 @@ class Mysql_api extends MY_library{
             foreach ($arr as $k=>$p){
                 foreach ($p as $k1=>$p1){
 
-                    if($k1 == "temperature" && array_key_exists("temperature",$value) && $value[$k1]){
+                    if($k1 == "temperature" && array_key_exists("temperature",$value) && $value[$k1] !== null ){
                         //$temperature[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $temperature_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
-                    }elseif ($k1 == "uv" && array_key_exists("uv",$value) && $value[$k1]){
+                    }elseif ($k1 == "uv" && array_key_exists("uv",$value) && $value[$k1] !== null ){
                         //$uv[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $uv_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
-                    }elseif ($k1 == "voc" && array_key_exists("voc",$value) && $value[$k1]){
+                    }elseif ($k1 == "voc" && array_key_exists("voc",$value) && $value[$k1] !== null ){
                         //$voc[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $voc_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
-                    }elseif ($k1 == "humidity" && array_key_exists("humidity",$value) && $value[$k1]){
+                    }elseif ($k1 == "humidity" && array_key_exists("humidity",$value) && $value[$k1] !== null ){
                         //$humidity[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $humidity_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
                         }
-                    }elseif ($k1 == "light" && array_key_exists("light",$value) && $value[$k1]){
+                    }elseif ($k1 == "light" && array_key_exists("light",$value) && $value[$k1] !== null ){
                         //$light[] = $value[$k1];
                         if(array_key_exists("env_no",$value)){
                             $light_areano[$value["env_no"]][] = array("data"=>$value[$k1],"equip_id"=>$equip_id,"time"=>$time);
