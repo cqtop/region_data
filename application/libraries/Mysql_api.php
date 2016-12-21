@@ -58,18 +58,22 @@ class Mysql_api extends MY_library{
 
             }
             foreach ($other as $k => $o){
-                $data["material_".$k] = (array_key_exists("material_".$k,$data) && is_array($data["material_".$k]) && $data["material_".$k])?$data["material_".$k]:array($o);
-                $unique = array_unique($data["material_".$k]);
-                if(is_array($unique)){
-                    if(sizeof($unique) > 1){
-                        $this->texture_no[$hhs[$k]][] = $v["env_no"];
-                    }else{
-                        $this->texture_no[$unique[0]][] = $v["env_no"];
+                //$data["material_".$k] = (array_key_exists("material_".$k,$data) && is_array($data["material_".$k]) && $data["material_".$k])?$data["material_".$k]:array($o);
+                if(array_key_exists("material_".$k,$data) && is_array($data["material_".$k]) && $data["material_".$k]){
+                    $unique = array_unique($data["material_".$k]);
+                    if(is_array($unique)){
+                        if(sizeof($unique) > 1){
+                            $this->texture_no[$hhs[$k]][] = $v["env_no"];
+                        }else{
+                            $this->texture_no[$unique[0]][] = $v["env_no"];
+                        }
                     }
                 }
+
             }
         }
         $this->areas = $areas;
+        //print_r($this->texture_no);
     }
 
 
@@ -372,9 +376,10 @@ class Mysql_api extends MY_library{
             ->result_array();
         $data_common_kf = $this->deal_param($this->texture["common"], $common_kf,"库房",$date);
         $all = array_merge($all,$data_common_kf);
+        $texture_arr = $this->texture["zgkf"]+$this->texture["hh"];
         foreach ($this->texture_no as $k => $nums){
             $same_arr = array_values(array_intersect($nums,$this->showcase)); //与展柜交集
-            $arr = array($k=>$this->texture["zgkf"][$k]);
+            $arr = array($k=>$texture_arr[$k]);
             if(!empty($same_arr)){
                 $texture_zt = $this->db["env"]->select("alert_param,temperature,humidity,light,uv,voc,env_no,equip_no,equip_time") //展柜,算材质数据
                 ->where_in("env_no",$same_arr)

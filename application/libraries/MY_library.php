@@ -191,6 +191,8 @@ class MY_library{
             $data["wave"] = $min_range.",".$max_range.",".$min_range_normal.",".$max_range_normal;
             $data["wave_status"] = $num?$num:($num_normal?$num_normal:0);
         }
+//        echo $param.":".$p.":".$this->day."<br>";
+//        echo array_key_exists("wave",$data)?$data["wave"]."<br><br>":'<br><br>';
         $data["count_abnormal"] = $abnormal;
         $data["compliance"] = sizeof($arr)?round((sizeof($arr) - $alerts_no)/sizeof($arr),2):0;
         return $data;
