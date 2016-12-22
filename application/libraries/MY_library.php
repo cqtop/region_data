@@ -50,8 +50,13 @@ class MY_library{
         $area_no_normal = array();
         foreach ($arr_areano as $area_no => $value){
             $datas = array();
-            foreach ($value as $v){
-                $datas[] = $arr[] = floatval($v["data"]);
+            foreach ($value as $k=>$v){
+                if(is_nan(floatval($v["data"]))){
+                    unset($arr_areano[$area_no][$k]);
+                }else{
+                    $datas[] = $arr[] = floatval($v["data"]);
+                }
+
             }
             $range[] = $range_areano[$area_no][] = max($datas) - min($datas);
         }
