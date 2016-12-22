@@ -51,7 +51,7 @@ class MY_library{
         foreach ($arr_areano as $area_no => $value){
             $datas = array();
             foreach ($value as $k=>$v){
-                if(is_nan(floatval($v["data"]))){
+                if($v["data"] === "NaN"){
                     unset($arr_areano[$area_no][$k]);
                 }else{
                     $datas[] = $arr[] = floatval($v["data"]);
