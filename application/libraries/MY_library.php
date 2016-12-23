@@ -13,7 +13,8 @@ class MY_library{
     protected $date_str = null;
     protected $EnvNo = array();//环境编号(展厅/展柜/库房)
     protected $CI = null;
-    protected $texture_no = array();
+    protected $texture_no_zg = array();
+    protected $texture_no_kf = array();
     protected $hall = array();
     protected $showcase = array();
     protected $storeroom = array();

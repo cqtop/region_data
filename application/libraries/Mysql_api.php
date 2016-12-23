@@ -63,9 +63,17 @@ class Mysql_api extends MY_library{
                     $unique = array_unique($data["material_".$k]);
                     if(is_array($unique)){
                         if(sizeof($unique) > 1){
-                            $this->texture_no[$hhs[$k]][] = $v["env_no"];
+                            if ($areas[$key]["type"] == "展柜"){
+                                $this->texture_no_zg[$hhs[$k]][] = $v["env_no"];
+                            }elseif($areas[$key]["type"] == "库房"){
+                                $this->texture_no_kf[$hhs[$k]][] = $v["env_no"];
+                            }
                         }else{
-                            $this->texture_no[$unique[0]][] = $v["env_no"];
+                            if ($areas[$key]["type"] == "展柜"){
+                                $this->texture_no_zg[$unique[0]][] = $v["env_no"];
+                            }elseif($areas[$key]["type"] == "库房"){
+                                $this->texture_no_kf[$unique[0]][] = $v["env_no"];
+                            }
                         }
                     }
                 }
@@ -377,7 +385,7 @@ class Mysql_api extends MY_library{
         $data_common_kf = $this->deal_param($this->texture["common"], $common_kf,"库房",$date);
         $all = array_merge($all,$data_common_kf);
         $texture_arr = $this->texture["zgkf"]+$this->texture["hh"];
-        foreach ($this->texture_no as $k => $nums){
+        foreach ($this->texture_no_zg as $k => $nums){
             $same_arr = array_values(array_intersect($nums,$this->showcase)); //与展柜交集
             $arr = array($k=>$texture_arr[$k]);
             if(!empty($same_arr)){
@@ -391,7 +399,12 @@ class Mysql_api extends MY_library{
                 $all = array_merge($all,$data_texture_zt);
             }
 
+
+        }
+
+        foreach ($this->texture_no_kf as $k => $nums){
             $same_arr = array_values(array_intersect($nums,$this->storeroom)); //与库房交集
+            $arr = array($k=>$texture_arr[$k]);
             if(!empty($same_arr)){
                 $texture_kf = $this->db["env"]->select("alert_param,temperature,humidity,light,uv,voc,env_no,equip_no,equip_time") //库房,算材质数据
                 ->where_in("env_no",$same_arr)

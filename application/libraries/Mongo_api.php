@@ -78,9 +78,17 @@ class Mongo_api extends MY_library{
                 $unique = array_unique($data["material_".$k]);
                 if(is_array($unique)){
                     if(sizeof($unique) > 1){
-                        $this->texture_no[$hhs[$k]][] = $v["No"];
+                        if ($areas[$key]["type"] == "展柜"){
+                            $this->texture_no_zg[$hhs[$k]][] = $v["No"];
+                        }elseif($areas[$key]["type"] == "库房"){
+                            $this->texture_no_kf[$hhs[$k]][] = $v["No"];
+                        }
                     }else{
-                        $this->texture_no[$unique[0]][] = $v["No"];
+                        if ($areas[$key]["type"] == "展柜") {
+                            $this->texture_no_zg[$unique[0]][] = $v["No"];
+                        }elseif($areas[$key]["type"] == "库房"){
+                            $this->texture_no_kf[$unique[0]][] = $v["No"];
+                        }
                     }
                 }
             }
@@ -419,7 +427,7 @@ class Mongo_api extends MY_library{
         $query['area_no'] = $this->storeroom;
         $data_deal = $this->deal_param($this->texture["common"], $query,"库房",$date);
         $all = array_merge($all,$data_deal);
-        foreach ($this->texture_no as $k => $nums){
+        foreach ($this->texture_no_zg as $k => $nums){
             $same_arr = array_values(array_intersect($nums,$this->showcase)); //与展柜交集
             $arr = array($k=>$this->texture["zgkf"][$k]);
             if(!empty($same_arr)){
@@ -427,8 +435,10 @@ class Mongo_api extends MY_library{
                 $data_deal =  $this->deal_param($arr, $query,"展柜",$date);
                 $all = array_merge($all,$data_deal);
             }
-
+        }
+        foreach ($this->texture_no_kf as $k => $nums){
             $same_arr = array_values(array_intersect($nums,$this->storeroom)); //与库房交集
+            $arr = array($k=>$this->texture["zgkf"][$k]);
             if(!empty($same_arr)){
                 $query['area_no'] = $same_arr;
                 $data_deal =  $this->deal_param($arr, $query,"库房",$date);
