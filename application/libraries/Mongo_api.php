@@ -51,28 +51,34 @@ class Mongo_api extends MY_library{
             $data = array();
             //根据文物找材质类型
             $relic = $this->mongo_db->select(array("material"))->where(array("place"=>$v["_id"]))->get("relic.base");
-            //$this->material
-            foreach ($relic as $r){
-                if($r["material"]){
-                    foreach ($this->material as $material => $value){
-                        if(in_array($r["material"],$value)){
-                            $r["material"] = $material;
-                            break;
+            if($relic){
+                foreach ($relic as $r){
+                    if($r["material"]){
+                        foreach ($this->material as $material => $value){
+                            if(in_array($r["material"],$value)){
+                                $r["material"] = $material;
+                                break;
+                            }
                         }
-                    }
-                    foreach ($texture as $k => $t){
-                        foreach ($t as $k1 => $t1){
-                            if(!empty($t1)){
-                                if(in_array($r["material"],$t1)){
-                                    $data["material_".$k1][] = $k;
+                        foreach ($texture as $k => $t){
+                            foreach ($t as $k1 => $t1){
+                                if(!empty($t1)){
+                                    if(in_array($r["material"],$t1)){
+                                        $data["material_".$k1][] = $k;
+                                    }
                                 }
                             }
                         }
+
                     }
 
                 }
-
+            }else{
+                $data["material_humidity"][] = 3;
+                $data["material_light"][] = 6;
             }
+
+
             foreach ($other as $k => $o){
                 $data["material_".$k] = (array_key_exists("material_".$k,$data) && is_array($data["material_".$k]) && $data["material_".$k])?$data["material_".$k]:array($o);
                 $unique = array_unique($data["material_".$k]);

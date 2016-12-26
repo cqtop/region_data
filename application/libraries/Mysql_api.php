@@ -41,22 +41,27 @@ class Mysql_api extends MY_library{
             $data = array();
             //根据文物找材质类型
             $relic = $this->db["relic"]->select("material")->where("parent_env_no",$v["env_no"])->get("relic")->result_array();
-
-            foreach ($relic as $r){
-                if($r["material"]){
-                    foreach ($texture as $k => $t){
-                        foreach ($t as $k1 => $t1){
-                            if(!empty($t1)){
-                                if(in_array($r["material"],$t1)){
-                                    $data["material_".$k1][] = $k;
+            if($relic) {
+                foreach ($relic as $r) {
+                    if ($r["material"]) {
+                        foreach ($texture as $k => $t) {
+                            foreach ($t as $k1 => $t1) {
+                                if (!empty($t1)) {
+                                    if (in_array($r["material"], $t1)) {
+                                        $data["material_" . $k1][] = $k;
+                                    }
                                 }
                             }
                         }
+
                     }
 
                 }
-
+            }else{
+                $data["material_humidity"][] = 3;
+                $data["material_light"][] = 6;
             }
+            
             foreach ($other as $k => $o){
                 //$data["material_".$k] = (array_key_exists("material_".$k,$data) && is_array($data["material_".$k]) && $data["material_".$k])?$data["material_".$k]:array($o);
                 if(array_key_exists("material_".$k,$data) && is_array($data["material_".$k]) && $data["material_".$k]){
