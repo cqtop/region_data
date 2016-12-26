@@ -149,8 +149,8 @@ class Mysql_api extends MY_library{
         $env_param = array("temperature","humidity","light","uv","voc");
         $datas = $this->db['env']
             ->select("temperature,humidity,light,uv,voc,alert_param")
-            ->where("equip_time>", $this->btime)
-            ->where("equip_time<",$this->etime)
+            ->where("equip_time>=",$this->btime)
+            ->where("equip_time<=",$this->etime)
             ->where("env_no",$env_no)
             ->get("data_sensor")
             ->result_array();
@@ -261,8 +261,8 @@ class Mysql_api extends MY_library{
     {
         $Arr = $this->db['env']
             ->select($type)
-            ->where("equip_time>", $this->btime)
-            ->where("equip_time<",$this->etime)
+            ->where("equip_time>=",$this->btime)
+            ->where("equip_time<=",$this->etime)
             ->where("$type<>","null")
             ->where_in("env_no",$this->EnvNo[$env_id])
             ->get("data_sensor")
@@ -281,8 +281,8 @@ class Mysql_api extends MY_library{
         $env_param = array("temperature","humidity","light","uv","voc");
         $alldatas =  $this->db['env']
             ->select("temperature,humidity,light,uv,voc,alert_param")
-            ->where("equip_time>", $this->btime)
-            ->where("equip_time<",$this->etime)
+            ->where("equip_time>=",$this->btime)
+            ->where("equip_time<=",$this->etime)
             ->where_in("env_no",$this->EnvNo[$env_id])
             ->get("data_sensor")
             ->result_array();
