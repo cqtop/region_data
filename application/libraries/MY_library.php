@@ -63,6 +63,7 @@ class MY_library{
         }
 
         $average = sizeof($arr)?round(array_sum($arr)/sizeof($arr),2):0;
+        $data["average"] = $average;
         $sum = 0;
         foreach ($arr as $k =>$v){
             $sum += pow($v - $average,2);
@@ -94,13 +95,10 @@ class MY_library{
                         "time"=>date("H:i:s",$v["time"]),
                     );
                 }else{
-                    $area_no_normal[$area_no][] = $arr_normal[] = $v["data"];
+                    $area_no_normal[$area_no][] = $v["data"];
                 }
             }
         }
-
-        $average_normal = sizeof($arr_normal)?round(array_sum($arr_normal)/sizeof($arr_normal),2):0;
-        $data["average"] = $average_normal;
 
         foreach ($area_no_normal as $area_no => $value){
             $range_normal[] = $range_normal_areano[$area_no][] = max($value) - min($value);
