@@ -17,4 +17,7 @@ Desktop.ini
 
 #nodejs:
 node_modules
+
+#config rename *.default.php
 application/config/database.php
+application/config/rest_api.php
